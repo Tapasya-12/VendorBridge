@@ -10,6 +10,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowLeft } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { LoadingSpinner } from "@/components/ui/loading-spinner";
+import { SuccessAnimation } from "@/components/ui/success-animation";
 
 function useToastSafe() {
   try { return useToast(); }
@@ -27,6 +29,7 @@ export default function PurchaseOrderNew() {
   const [deliveryDate, setDeliveryDate] = useState("");
   const [notes, setNotes] = useState("");
   const [taxPercent, setTaxPercent] = useState("18");
+  const [showSuccess, setShowSuccess] = useState(false);
 
   const selectedQuotation = quotations?.find(q => String(q.id) === quotationId);
   const taxAmount = selectedQuotation ? (selectedQuotation.totalPrice * (parseFloat(taxPercent) || 0)) / 100 : 0;
@@ -48,8 +51,11 @@ export default function PurchaseOrderNew() {
         }
       });
       await queryClient.invalidateQueries({ queryKey: getListPurchaseOrdersQueryKey() });
+      setShowSuccess(true);
       toast({ title: "Purchase order created" });
-      setLocation("/purchase-orders");
+      setTimeout(() => {
+        setLocation("/purchase-orders");
+      }, 1500);
     } catch (err) {
       toast({ title: "Error", description: err instanceof Error ? err.message : "Failed to create PO" });
     }
@@ -57,13 +63,19 @@ export default function PurchaseOrderNew() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-4">
-        <Link href="/purchase-orders"><Button variant="ghost" size="sm"><ArrowLeft className="mr-2 h-4 w-4" /> Back</Button></Link>
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Create Purchase Order</h1>
-          <p className="text-muted-foreground mt-1">Issue a purchase order from an approved quotation.</p>
+      {showSuccess ? (
+        <div className="flex items-center justify-center min-h-[400px]">
+          <SuccessAnimation size="xl" text="Purchase Order Created Successfully!" variant="bounce" />
         </div>
-      </div>
+      ) : (
+        <>
+          <div className="flex items-center gap-4">
+            <Link href="/purchase-orders"><Button variant="ghost" size="sm"><ArrowLeft className="mr-2 h-4 w-4" /> Back</Button></Link>
+            <div>
+              <h1 className="text-3xl font-bold tracking-tight">Create Purchase Order</h1>
+              <p className="text-muted-foreground mt-1">Issue a purchase order from an approved quotation.</p>
+            </div>
+          </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
         <Card className="border-border/50">
@@ -118,10 +130,19 @@ export default function PurchaseOrderNew() {
         <div className="flex justify-end gap-3">
           <Link href="/purchase-orders"><Button variant="outline" type="button">Cancel</Button></Link>
           <Button type="submit" disabled={createPO.isPending} data-testid="btn-submit">
-            {createPO.isPending ? "Creating..." : "Create Purchase Order"}
+            {createPO.isPending ? (
+              <span className="flex items-center gap-2">
+                <LoadingSpinner size="sm" />
+                Creating...
+              </span>
+            ) : (
+              "Create Purchase Order"
+            )}
           </Button>
         </div>
       </form>
+        </>
+      )}
     </div>
   );
 }

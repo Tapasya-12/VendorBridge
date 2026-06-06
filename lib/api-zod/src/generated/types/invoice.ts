@@ -16,6 +16,8 @@ export interface Invoice {
   vendorId: number;
   /** @nullable */
   vendorName?: string | null;
+  /** @nullable */
+  vendorEmail?: string | null;
   subtotal: number;
   taxAmount: number;
   totalAmount: number;

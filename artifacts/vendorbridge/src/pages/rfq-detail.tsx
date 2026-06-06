@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { ArrowLeft, Send, Calendar, Package, Star, TrendingDown, CheckCircle2, XCircle } from "lucide-react";
+import { ArrowLeft, Send, Calendar, Package, Star, TrendingDown, CheckCircle2, XCircle, Award } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import { motion } from "framer-motion";
@@ -197,6 +197,17 @@ export default function RfqDetail() {
                   const isBest = q.totalPrice === lowestPrice;
                   const isAccepted = q.status === "accepted";
                   const isRejected = q.status === "rejected";
+                  const vendorRating = (q as any).vendorRating ?? null;
+                  const renderStars = (r: number | null) => {
+                    const val = r ?? 0;
+                    const stars = [];
+                    for (let i = 0; i < 5; i++) {
+                      stars.push(i < Math.floor(val) ? "full" : i === Math.floor(val) && val - Math.floor(val) >= 0.5 ? "half" : "empty");
+                    }
+                    return stars.map((s, i) => (
+                      <Star key={i} className={`h-3 w-3 inline-block ${s === "full" ? "fill-yellow-400 text-yellow-400" : s === "half" ? "fill-yellow-400/50 text-yellow-400" : "text-gray-300"}`} />
+                    ));
+                  };
                   return (
                     <motion.div
                       key={q.id}
@@ -228,9 +239,16 @@ export default function RfqDetail() {
                           <div className="flex items-center justify-between mb-3">
                             <div>
                               <p className="font-semibold">{q.vendorName || `Vendor ${q.vendorId}`}</p>
-                              <Badge variant="outline" className={`border-0 capitalize text-xs mt-1 ${QUOTATION_STATUS_COLORS[q.status] ?? ""}`}>
-                                {q.status.replace("_", " ")}
-                              </Badge>
+                              <div className="flex items-center gap-2 mt-1">
+                                <Badge variant="outline" className={`border-0 capitalize text-xs ${QUOTATION_STATUS_COLORS[q.status] ?? ""}`}>
+                                  {q.status.replace("_", " ")}
+                                </Badge>
+                                {vendorRating !== null && (
+                                  <span className="text-xs text-muted-foreground flex items-center gap-0.5">
+                                    {renderStars(vendorRating)}
+                                  </span>
+                                )}
+                              </div>
                             </div>
                             <div className="text-right">
                               <p className={`text-xl font-bold ${isBest && !isRejected ? "text-green-600" : ""}`}>
@@ -248,7 +266,7 @@ export default function RfqDetail() {
                             </div>
                             <div className="flex justify-between text-muted-foreground">
                               <span>Items</span>
-                              <span className="font-medium text-foreground">{q.items?.length ?? 0}</span>
+                              <span className="font-medium text-foreground">{q.items?.length ?? 0} / {rfq.items?.length ?? 0}</span>
                             </div>
                             {q.notes && (
                               <div className="pt-1 border-t border-border/50">

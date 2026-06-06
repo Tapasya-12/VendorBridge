@@ -42,16 +42,34 @@ export default function InvoiceDetail() {
   const { data: inv, isLoading, isError } = useGetInvoice(invId, { query: { enabled: !!invId, queryKey: getGetInvoiceQueryKey(invId) } });
   const sendEmail = useSendInvoiceEmail();
 
-  const handleDownloadPdf = () => {
-    if (!invoiceRef.current) return;
-    const opt = {
-      margin:       10,
-      filename:     `Invoice-${inv?.invoiceNumber || invId}.pdf`,
-      image:        { type: 'jpeg', quality: 0.98 },
-      html2canvas:  { scale: 2, useCORS: true },
-      jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
-    };
-    html2pdf().set(opt).from(invoiceRef.current).save();
+  // Prefill email when invoice data is loaded
+  React.useEffect(() => {
+    if (inv?.vendorEmail && !emailInput) {
+      setEmailInput(inv.vendorEmail);
+    }
+  }, [inv?.vendorEmail]);
+
+  const handleDownloadPdf = async () => {
+    if (!invoiceRef.current) {
+      toast({ title: "Error", description: "Invoice content not ready for download." });
+      return;
+    }
+    
+    try {
+      const opt = {
+        margin:       10,
+        filename:     `Invoice-${inv?.invoiceNumber || invId}.pdf`,
+        image:        { type: 'jpeg' as const, quality: 0.98 },
+        html2canvas:  { scale: 2, useCORS: true, logging: false },
+        jsPDF:        { unit: 'mm' as const, format: 'a4' as const, orientation: 'portrait' as const }
+      };
+      
+      await html2pdf().set(opt).from(invoiceRef.current).save();
+      toast({ title: "Success", description: "Invoice PDF downloaded successfully." });
+    } catch (error) {
+      console.error("PDF generation error:", error);
+      toast({ title: "Error", description: "Failed to generate PDF. Please try again." });
+    }
   };
 
   const handleSendEmail = async () => {
@@ -189,7 +207,24 @@ export default function InvoiceDetail() {
         </CardContent>
       </Card>
 
-      <style>{`@media print { .print\\:hidden { display: none !important; } body { background: white !important; } }`}</style>
+      <style>{`
+        @media print {
+          .print\\:hidden { display: none !important; }
+          body { 
+            background: white !important; 
+            margin: 0;
+            padding: 0;
+          }
+          * {
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+          }
+          @page {
+            margin: 20mm;
+            size: A4;
+          }
+        }
+      `}</style>
     </div>
   );
 }

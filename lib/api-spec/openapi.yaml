@@ -1469,6 +1469,8 @@ components:
           type: integer
         vendorName:
           type: ["string", "null"]
+        vendorEmail:
+          type: ["string", "null"]
         subtotal:
           type: number
         taxAmount:

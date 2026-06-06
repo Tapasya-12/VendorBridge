@@ -9,10 +9,10 @@ async function getQuotationWithDetails(qId: number) {
   if (!q) return null;
   const items = await db.select().from(quotationItemsTable).where(eq(quotationItemsTable.quotationId, qId));
   const [rfq] = await db.select({ title: rfqsTable.title }).from(rfqsTable).where(eq(rfqsTable.id, q.rfqId));
-  const [vendor] = await db.select({ name: vendorsTable.name }).from(vendorsTable).where(eq(vendorsTable.id, q.vendorId));
+  const [vendor] = await db.select({ name: vendorsTable.name, rating: vendorsTable.rating }).from(vendorsTable).where(eq(vendorsTable.id, q.vendorId));
   return {
     id: q.id, rfqId: q.rfqId, rfqTitle: rfq?.title ?? null,
-    vendorId: q.vendorId, vendorName: vendor?.name ?? null,
+    vendorId: q.vendorId, vendorName: vendor?.name ?? null, vendorRating: vendor?.rating ?? null,
     totalPrice: q.totalPrice, deliveryDays: q.deliveryDays ?? null,
     notes: q.notes ?? null, status: q.status,
     items: items.map(i => ({ id: i.id, quotationId: i.quotationId, productName: i.productName, unitPrice: i.unitPrice, quantity: i.quantity, totalPrice: i.totalPrice })),

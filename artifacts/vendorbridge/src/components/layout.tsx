@@ -69,20 +69,20 @@ export function AppSidebar() {
 
   return (
     <Sidebar className="print:hidden">
-      <SidebarHeader className="h-16 flex items-center px-4 border-b">
-        <div className="flex items-center gap-2 font-bold text-lg text-primary tracking-tight">
-          <div className="w-8 h-8 bg-primary text-primary-foreground rounded-md flex items-center justify-center">
+      <SidebarHeader className="h-20 flex items-center px-6 border-b border-sidebar-border/50">
+        <div className="flex items-center gap-3 font-bold text-2xl tracking-tight">
+          <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-gradient-to-br from-primary to-blue-600 text-white shadow-lg shadow-primary/20 shrink-0">
             VB
           </div>
-          {state === "expanded" && <span>VendorBridge</span>}
+          {state === "expanded" && <span className="bg-clip-text text-transparent bg-gradient-to-r from-primary to-blue-600 truncate">VendorBridge</span>}
         </div>
       </SidebarHeader>
       
-      <SidebarContent>
+      <SidebarContent className="px-3 py-4">
         <SidebarGroup>
-          <SidebarGroupLabel>Menu</SidebarGroupLabel>
+          <SidebarGroupLabel className="px-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">Menu</SidebarGroupLabel>
           <SidebarGroupContent>
-            <SidebarMenu>
+            <SidebarMenu className="gap-2">
               {NAV_ITEMS.map((item) => {
                 const isActive = location.startsWith(item.url) && (item.url !== "/" || location === "/");
                 const showBadge = item.title === "Notifications" && unreadCount > 0;
@@ -92,17 +92,22 @@ export function AppSidebar() {
                       asChild 
                       isActive={isActive}
                       tooltip={item.title}
+                      className={`h-11 rounded-xl transition-all duration-200 group px-3 ${
+                        isActive 
+                          ? "!bg-primary !text-primary-foreground shadow-md shadow-primary/20 font-medium" 
+                          : "text-muted-foreground hover:!bg-primary/10 hover:!text-primary hover:translate-x-1"
+                      }`}
                     >
                       <Link href={item.url} data-testid={`nav-${item.title.toLowerCase().replace(/\s+/g, "-")}`}>
-                        <div className="relative">
-                          <item.icon />
+                        <div className="relative flex items-center justify-center">
+                          <item.icon className={`w-5 h-5 ${isActive ? "text-primary-foreground" : "text-muted-foreground group-hover:text-primary transition-colors"}`} />
                           {showBadge && (
-                            <span className="absolute -top-1.5 -right-1.5 flex items-center justify-center w-4 h-4 text-[10px] font-bold text-white bg-red-500 rounded-full">
+                            <span className="absolute -top-1.5 -right-1.5 flex items-center justify-center w-4 h-4 text-[10px] font-bold text-white bg-red-500 rounded-full ring-2 ring-background">
                               {unreadCount > 9 ? "9+" : unreadCount}
                             </span>
                           )}
                         </div>
-                        <span>{item.title}</span>
+                        <span className="text-[15px]">{item.title}</span>
                       </Link>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
@@ -113,22 +118,27 @@ export function AppSidebar() {
         </SidebarGroup>
       </SidebarContent>
 
-      <SidebarFooter className="border-t p-4">
+      <SidebarFooter className="border-t border-sidebar-border/50 p-4">
         {user ? (
           <div className="flex flex-col gap-4">
             {state === "expanded" && (
-              <div className="flex flex-col">
-                <span className="text-sm font-medium">{user.name}</span>
-                <span className="text-xs text-muted-foreground capitalize">{user.role.replace("_", " ")}</span>
+              <div className="flex items-center gap-3 px-2">
+                <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold shadow-inner shrink-0">
+                  {user.name.charAt(0).toUpperCase()}
+                </div>
+                <div className="flex flex-col min-w-0">
+                  <span className="text-sm font-semibold text-foreground truncate">{user.name}</span>
+                  <span className="text-xs text-muted-foreground capitalize truncate">{user.role.replace("_", " ")}</span>
+                </div>
               </div>
             )}
             <Button 
               variant="outline" 
-              className="w-full justify-start text-muted-foreground" 
+              className={`w-full text-muted-foreground hover:text-destructive hover:bg-destructive/10 hover:border-destructive/30 transition-all ${state === "collapsed" ? "px-0 justify-center" : "justify-start"}`}
               onClick={handleLogout}
               data-testid="btn-logout"
             >
-              <LogOut className="mr-2 h-4 w-4" />
+              <LogOut className={`${state === "expanded" ? "mr-2" : ""} h-4 w-4`} />
               {state === "expanded" && "Log out"}
             </Button>
           </div>
@@ -195,25 +205,34 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
   return (
     <SidebarProvider>
-      <div className="flex min-h-screen w-full bg-slate-50 dark:bg-slate-950 print:bg-white print:min-h-0 print:h-auto">
+      <div className="flex min-h-screen w-full bg-transparent print:bg-white print:min-h-0 print:h-auto">
         <AppSidebar />
         <div className="flex-1 flex flex-col min-w-0 print:block">
-          <header className="h-14 flex items-center px-4 border-b bg-white dark:bg-slate-900 shrink-0 print:hidden gap-3">
-            <SidebarTrigger />
+          <header className="h-16 flex items-center px-6 border-b border-sidebar-border/50 bg-background/60 backdrop-blur-xl backdrop-saturate-150 shrink-0 print:hidden gap-4">
+            <SidebarTrigger className="hover:bg-primary/10 hover:text-primary transition-colors" />
+            <div className="h-6 w-px bg-sidebar-border/50 hidden sm:block" />
             {breadcrumbs}
             <div className="flex-1" />
-            <div className="flex items-center gap-3">
-              <Link href="/notifications" className="relative">
-                <Bell className="h-5 w-5 text-muted-foreground hover:text-foreground transition-colors" />
+            <div className="flex items-center gap-4">
+              <Link href="/notifications" className="relative group">
+                <div className="p-2 rounded-full hover:bg-primary/10 transition-colors">
+                  <Bell className="h-5 w-5 text-muted-foreground group-hover:text-primary transition-colors" />
+                </div>
                 {unreadCount > 0 && (
-                  <span className="absolute -top-1.5 -right-1.5 flex items-center justify-center w-4 h-4 text-[10px] font-bold text-white bg-red-500 rounded-full">
+                  <span className="absolute top-1.5 right-1.5 flex items-center justify-center w-4 h-4 text-[10px] font-bold text-white bg-red-500 rounded-full ring-2 ring-background">
                     {unreadCount > 9 ? "9+" : unreadCount}
                   </span>
                 )}
               </Link>
               {user && (
-                <div className="hidden sm:flex items-center gap-2 text-sm">
-                  <span className="text-muted-foreground">{user.name}</span>
+                <div className="hidden sm:flex items-center gap-3 pl-4 border-l border-sidebar-border/50">
+                  <div className="flex flex-col items-end">
+                    <span className="text-sm font-semibold text-foreground">{user.name}</span>
+                    <span className="text-[10px] text-muted-foreground uppercase tracking-wider font-medium">{user.role.replace("_", " ")}</span>
+                  </div>
+                  <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-primary to-blue-500 flex items-center justify-center text-white font-bold shadow-sm ring-2 ring-background">
+                    {user.name.charAt(0).toUpperCase()}
+                  </div>
                 </div>
               )}
             </div>

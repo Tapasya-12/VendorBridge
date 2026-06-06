@@ -11,6 +11,8 @@ import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, Plus, Trash2, X, Search } from "lucide-react";
 import { Link } from "wouter";
 import { useToast } from "@/hooks/use-toast";
+import { LoadingSpinner } from "@/components/ui/loading-spinner";
+import { SuccessAnimation } from "@/components/ui/success-animation";
 
 function useToastSafe() {
   try { return useToast(); }
@@ -30,6 +32,7 @@ export default function RfqsNew() {
   const [selectedVendors, setSelectedVendors] = useState<number[]>([]);
   const [vendorSearch, setVendorSearch] = useState("");
   const [items, setItems] = useState<LineItem[]>([{ productName: "", description: "", quantity: "1", unit: "pcs" }]);
+  const [showSuccess, setShowSuccess] = useState(false);
 
   const toggleVendor = (id: number) => {
     setSelectedVendors(prev => prev.includes(id) ? prev.filter(v => v !== id) : [...prev, id]);
@@ -56,8 +59,11 @@ export default function RfqsNew() {
         }
       });
       await queryClient.invalidateQueries({ queryKey: getListRfqsQueryKey() });
+      setShowSuccess(true);
       toast({ title: "RFQ created", description: `${form.title} has been created.` });
-      setLocation("/rfqs");
+      setTimeout(() => {
+        setLocation("/rfqs");
+      }, 1500);
     } catch (err: unknown) {
       toast({ title: "Error", description: err instanceof Error ? err.message : "Failed to create RFQ" });
     }
@@ -65,13 +71,19 @@ export default function RfqsNew() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-4">
-        <Link href="/rfqs"><Button variant="ghost" size="sm"><ArrowLeft className="mr-2 h-4 w-4" /> Back</Button></Link>
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Create RFQ</h1>
-          <p className="text-muted-foreground mt-1">Send requests for quotation to your vendors.</p>
+      {showSuccess ? (
+        <div className="flex items-center justify-center min-h-[400px]">
+          <SuccessAnimation size="lg" text="RFQ Created Successfully!" variant="bounce" />
         </div>
-      </div>
+      ) : (
+        <>
+          <div className="flex items-center gap-4">
+            <Link href="/rfqs"><Button variant="ghost" size="sm"><ArrowLeft className="mr-2 h-4 w-4" /> Back</Button></Link>
+            <div>
+              <h1 className="text-3xl font-bold tracking-tight">Create RFQ</h1>
+              <p className="text-muted-foreground mt-1">Send requests for quotation to your vendors.</p>
+            </div>
+          </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
         <Card className="border-border/50">
@@ -194,10 +206,19 @@ export default function RfqsNew() {
         <div className="flex justify-end gap-3">
           <Link href="/rfqs"><Button variant="outline" type="button">Cancel</Button></Link>
           <Button type="submit" disabled={createRfq.isPending} data-testid="btn-submit">
-            {createRfq.isPending ? "Creating..." : "Create RFQ"}
+            {createRfq.isPending ? (
+              <span className="flex items-center gap-2">
+                <LoadingSpinner size="sm" />
+                Creating...
+              </span>
+            ) : (
+              "Create RFQ"
+            )}
           </Button>
         </div>
       </form>
+        </>
+      )}
     </div>
   );
 }

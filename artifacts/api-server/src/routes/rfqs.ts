@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { eq, ilike, and, sql } from "drizzle-orm";
-import { db, rfqsTable, rfqItemsTable, rfqVendorsTable, usersTable, quotationsTable } from "@workspace/db";
+import { db, rfqsTable, rfqItemsTable, rfqVendorsTable, usersTable, quotationsTable, quotationItemsTable, vendorsTable } from "@workspace/db";
 
 const router = Router();
 
@@ -107,12 +107,16 @@ router.get("/rfqs/:rfqId/quotations", async (req, res): Promise<void> => {
   const quotations = await db.select().from(quotationsTable).where(eq(quotationsTable.rfqId, rfqId));
   const results = [];
   for (const q of quotations) {
-    const [vendor] = await db.select({ name: usersTable.name }).from(usersTable).where(eq(usersTable.id, q.vendorId));
+    const [vendor] = await db.select({ name: vendorsTable.name, rating: vendorsTable.rating }).from(vendorsTable).where(eq(vendorsTable.id, q.vendorId));
     const [rfq] = await db.select({ title: rfqsTable.title }).from(rfqsTable).where(eq(rfqsTable.id, rfqId));
+    const items = await db.select().from(quotationItemsTable).where(eq(quotationItemsTable.quotationId, q.id));
     results.push({
       id: q.id, rfqId: q.rfqId, rfqTitle: rfq?.title ?? null, vendorId: q.vendorId,
-      vendorName: vendor?.name ?? null, totalPrice: q.totalPrice, deliveryDays: q.deliveryDays ?? null,
-      notes: q.notes ?? null, status: q.status, items: [], createdAt: q.createdAt.toISOString(),
+      vendorName: vendor?.name ?? null, vendorRating: vendor?.rating ?? null,
+      totalPrice: q.totalPrice, deliveryDays: q.deliveryDays ?? null,
+      notes: q.notes ?? null, status: q.status,
+      items: items.map(i => ({ id: i.id, quotationId: i.quotationId, productName: i.productName, unitPrice: i.unitPrice, quantity: i.quantity, totalPrice: i.totalPrice })),
+      createdAt: q.createdAt.toISOString(),
     });
   }
   res.json(results);

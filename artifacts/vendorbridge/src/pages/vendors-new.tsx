@@ -11,6 +11,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { ArrowLeft } from "lucide-react";
 import { Link } from "wouter";
+import { LoadingSpinner } from "@/components/ui/loading-spinner";
+import { SuccessAnimation } from "@/components/ui/success-animation";
 
 // Check if use-toast exists or use sonner
 function useToastSafe() {
@@ -31,6 +33,7 @@ export default function VendorsNew() {
     name: "", email: "", phone: "", category: "", gstNumber: "",
     address: "", status: "pending", contactPerson: "", website: "",
   });
+  const [showSuccess, setShowSuccess] = useState(false);
 
   const handleChange = (field: string, value: string) => {
     setForm(prev => ({ ...prev, [field]: value }));
@@ -45,8 +48,11 @@ export default function VendorsNew() {
     try {
       await createVendor.mutateAsync({ data: { ...form, phone: form.phone || undefined, gstNumber: form.gstNumber || undefined, address: form.address || undefined, contactPerson: form.contactPerson || undefined, website: form.website || undefined } });
       await queryClient.invalidateQueries({ queryKey: getListVendorsQueryKey() });
+      setShowSuccess(true);
       toast({ title: "Vendor created", description: `${form.name} has been added.` });
-      setLocation("/vendors");
+      setTimeout(() => {
+        setLocation("/vendors");
+      }, 1500);
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "Failed to create vendor";
       toast({ title: "Error", description: msg });
@@ -55,17 +61,23 @@ export default function VendorsNew() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-4">
-        <Link href="/vendors">
-          <Button variant="ghost" size="sm" data-testid="btn-back">
-            <ArrowLeft className="mr-2 h-4 w-4" /> Back
-          </Button>
-        </Link>
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Add Vendor</h1>
-          <p className="text-muted-foreground mt-1">Register a new supplier in your network.</p>
+      {showSuccess ? (
+        <div className="flex items-center justify-center min-h-[400px]">
+          <SuccessAnimation size="xl" text="Vendor Created Successfully!" variant="bounce" />
         </div>
-      </div>
+      ) : (
+        <>
+          <div className="flex items-center gap-4">
+            <Link href="/vendors">
+              <Button variant="ghost" size="sm" data-testid="btn-back">
+                <ArrowLeft className="mr-2 h-4 w-4" /> Back
+              </Button>
+            </Link>
+            <div>
+              <h1 className="text-3xl font-bold tracking-tight">Add Vendor</h1>
+              <p className="text-muted-foreground mt-1">Register a new supplier in your network.</p>
+            </div>
+          </div>
 
       <form onSubmit={handleSubmit}>
         <div className="grid gap-6 lg:grid-cols-2">
@@ -131,10 +143,19 @@ export default function VendorsNew() {
         <div className="flex justify-end gap-3 mt-6">
           <Link href="/vendors"><Button variant="outline" type="button">Cancel</Button></Link>
           <Button type="submit" disabled={createVendor.isPending} data-testid="btn-submit">
-            {createVendor.isPending ? "Creating..." : "Create Vendor"}
+            {createVendor.isPending ? (
+              <span className="flex items-center gap-2">
+                <LoadingSpinner size="sm" />
+                Creating...
+              </span>
+            ) : (
+              "Create Vendor"
+            )}
           </Button>
         </div>
       </form>
+        </>
+      )}
     </div>
   );
 }

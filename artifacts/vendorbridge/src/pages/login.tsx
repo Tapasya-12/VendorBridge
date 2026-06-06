@@ -18,6 +18,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { motion } from "framer-motion";
+import { LoadingSpinner } from "@/components/ui/loading-spinner";
 
 const loginSchema = z.object({
   email: z.string().email("Invalid email address"),
@@ -124,7 +125,14 @@ export default function Login() {
                   disabled={loginMutation.isPending}
                   data-testid="button-submit-login"
                 >
-                  {loginMutation.isPending ? "Signing in..." : "Sign In"}
+                  {loginMutation.isPending ? (
+                    <span className="flex items-center gap-2">
+                      <LoadingSpinner size="sm" />
+                      Signing in...
+                    </span>
+                  ) : (
+                    "Sign In"
+                  )}
                 </Button>
               </form>
             </Form>

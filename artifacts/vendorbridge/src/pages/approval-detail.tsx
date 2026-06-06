@@ -10,6 +10,9 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ArrowLeft, CheckCircle, XCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { SuccessAnimation } from "@/components/ui/success-animation";
+import { ErrorAnimation } from "@/components/ui/error-animation";
+import { LoadingSpinner } from "@/components/ui/loading-spinner";
 
 function useToastSafe() {
   try { return useToast(); }
@@ -28,6 +31,8 @@ export default function ApprovalDetail() {
   const queryClient = useQueryClient();
   const aId = parseInt(id ?? "0", 10);
   const [remarks, setRemarks] = useState("");
+  const [showApproved, setShowApproved] = useState(false);
+  const [showRejected, setShowRejected] = useState(false);
 
   const { data: approvals, isLoading, isError } = useListApprovals();
   const approval = approvals?.find(a => a.id === aId);
@@ -39,6 +44,7 @@ export default function ApprovalDetail() {
     try {
       await approveApproval.mutateAsync({ id: aId, data: { remarks: remarks || undefined } });
       await queryClient.invalidateQueries({ queryKey: getListApprovalsQueryKey() });
+      setShowApproved(true);
       toast({ title: "Approved", description: "The quotation has been approved." });
     } catch {
       toast({ title: "Error", description: "Failed to approve." });
@@ -50,6 +56,7 @@ export default function ApprovalDetail() {
     try {
       await rejectApproval.mutateAsync({ id: aId, data: { remarks } });
       await queryClient.invalidateQueries({ queryKey: getListApprovalsQueryKey() });
+      setShowRejected(true);
       toast({ title: "Rejected", description: "The quotation has been rejected." });
     } catch {
       toast({ title: "Error", description: "Failed to reject." });
@@ -71,6 +78,32 @@ export default function ApprovalDetail() {
   );
 
   const statusStyle = STATUS_STYLES[approval.status] ?? STATUS_STYLES.pending;
+
+  if (showApproved) {
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center gap-4">
+          <Link href="/approvals"><Button variant="ghost" size="sm"><ArrowLeft className="mr-2 h-4 w-4" /> Back</Button></Link>
+        </div>
+        <div className="flex items-center justify-center min-h-[400px]">
+          <SuccessAnimation size="xl" text="Quotation Approved Successfully!" variant="bounce" />
+        </div>
+      </div>
+    );
+  }
+
+  if (showRejected) {
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center gap-4">
+          <Link href="/approvals"><Button variant="ghost" size="sm"><ArrowLeft className="mr-2 h-4 w-4" /> Back</Button></Link>
+        </div>
+        <div className="flex items-center justify-center min-h-[400px]">
+          <ErrorAnimation size="xl" text="Quotation Rejected" variant="shake" />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -94,7 +127,7 @@ export default function ApprovalDetail() {
                 { label: "Vendor", value: approval.vendorName || "—" },
                 { label: "Total Price", value: approval.totalPrice ? `$${Number(approval.totalPrice).toLocaleString("en-US", { minimumFractionDigits: 2 })}` : "—" },
                 { label: "Submitted", value: new Date(approval.createdAt).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" }) },
-                { label: "Last Updated", value: new Date(approval.updatedAt).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" }) },
+                { label: "Last Updated", value: approval.updatedAt ? new Date(approval.updatedAt).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" }) : "—" },
                 { label: "Approved By", value: approval.approvedByName || "—" },
               ].map(({ label, value }) => (
                 <div key={label} className="flex justify-between">
@@ -129,8 +162,17 @@ export default function ApprovalDetail() {
                   className="flex-1 bg-green-600 hover:bg-green-700 text-white"
                   data-testid="btn-approve"
                 >
-                  <CheckCircle className="mr-2 h-4 w-4" />
-                  {approveApproval.isPending ? "Approving..." : "Approve"}
+                  {approveApproval.isPending ? (
+                    <span className="flex items-center gap-2">
+                      <LoadingSpinner size="sm" />
+                      Approving...
+                    </span>
+                  ) : (
+                    <>
+                      <CheckCircle className="mr-2 h-4 w-4" />
+                      Approve
+                    </>
+                  )}
                 </Button>
                 <Button
                   variant="destructive"
@@ -139,8 +181,17 @@ export default function ApprovalDetail() {
                   className="flex-1"
                   data-testid="btn-reject"
                 >
-                  <XCircle className="mr-2 h-4 w-4" />
-                  {rejectApproval.isPending ? "Rejecting..." : "Reject"}
+                  {rejectApproval.isPending ? (
+                    <span className="flex items-center gap-2">
+                      <LoadingSpinner size="sm" />
+                      Rejecting...
+                    </span>
+                  ) : (
+                    <>
+                      <XCircle className="mr-2 h-4 w-4" />
+                      Reject
+                    </>
+                  )}
                 </Button>
               </div>
             </CardContent>
