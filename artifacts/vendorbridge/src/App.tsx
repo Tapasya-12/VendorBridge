@@ -25,6 +25,7 @@ import RfqDetail from "@/pages/rfq-detail";
 import Quotations from "@/pages/quotations";
 import QuotationsNew from "@/pages/quotations-new";
 import QuotationDetail from "@/pages/quotation-detail";
+import QuotationCompare from "@/pages/quotation-compare";
 
 import Approvals from "@/pages/approvals";
 import ApprovalDetail from "@/pages/approval-detail";
@@ -83,6 +84,9 @@ function Router() {
       </Route>
       <Route path="/rfqs">
         <Layout><Rfqs /></Layout>
+      </Route>
+      <Route path="/rfqs/:id/compare">
+        <Layout><QuotationCompare /></Layout>
       </Route>
 
       <Route path="/quotations/new">

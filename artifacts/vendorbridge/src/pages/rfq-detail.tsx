@@ -147,11 +147,18 @@ export default function RfqDetail() {
               <TrendingDown className="h-5 w-5 text-muted-foreground" />
               <CardTitle>Quotation Comparison ({quotations?.length ?? 0})</CardTitle>
             </div>
-            {rfq.status === "sent" && (
-              <Link href="/quotations/new">
-                <Button variant="outline" size="sm">Submit Quotation</Button>
-              </Link>
-            )}
+            <div className="flex items-center gap-2">
+              {!!quotations?.length && (
+                <Link href={`/rfqs/${rfqId}/compare`}>
+                  <Button variant="secondary" size="sm">Compare All</Button>
+                </Link>
+              )}
+              {rfq.status === "sent" && (
+                <Link href="/quotations/new">
+                  <Button variant="outline" size="sm">Submit Quotation</Button>
+                </Link>
+              )}
+            </div>
           </div>
         </CardHeader>
         <CardContent>
