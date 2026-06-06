@@ -9,7 +9,9 @@
   },
   "scripts": {
     "push": "drizzle-kit push --config ./drizzle.config.ts",
-    "push-force": "drizzle-kit push --force --config ./drizzle.config.ts"
+    "push-force": "drizzle-kit push --force --config ./drizzle.config.ts",
+    "seed": "tsx src/seed.ts",
+    "reset": "tsx src/reset-db.ts && pnpm run seed"
   },
   "dependencies": {
     "drizzle-orm": "catalog:",
@@ -18,8 +20,10 @@
     "zod": "catalog:"
   },
   "devDependencies": {
+    "@esbuild/win32-x64": "^0.27.3",
     "@types/node": "catalog:",
     "@types/pg": "^8.20.0",
-    "drizzle-kit": "^0.31.10"
+    "drizzle-kit": "^0.31.10",
+    "tsx": "^4.19.2"
   }
 }
