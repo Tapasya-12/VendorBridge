@@ -20,10 +20,9 @@ function useToastSafe() {
 }
 
 const STATUS_COLORS: Record<string, string> = {
-  active: "bg-green-100 text-green-800",
-  inactive: "bg-gray-100 text-gray-700",
+  approved: "bg-green-100 text-green-800",
   pending: "bg-yellow-100 text-yellow-800",
-  blacklisted: "bg-red-100 text-red-800",
+  rejected: "bg-red-100 text-red-800",
 };
 
 export default function VendorDetail() {
@@ -161,9 +160,8 @@ export default function VendorDetail() {
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="pending">Pending</SelectItem>
-                    <SelectItem value="active">Active</SelectItem>
-                    <SelectItem value="inactive">Inactive</SelectItem>
-                    <SelectItem value="blacklisted">Blacklisted</SelectItem>
+                    <SelectItem value="approved">Approved</SelectItem>
+                    <SelectItem value="rejected">Rejected</SelectItem>
                   </SelectContent>
                 </Select>
               ) : <p className="text-sm py-2 px-3 rounded-md bg-muted/40 capitalize">{vendor.status || "—"}</p>}

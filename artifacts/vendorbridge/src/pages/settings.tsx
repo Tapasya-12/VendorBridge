@@ -4,7 +4,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/use-auth";
+import { useTheme } from "@/components/theme-provider";
+import { Sun, Moon, Monitor } from "lucide-react";
 
 const ROLE_COLORS: Record<string, string> = {
   admin: "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300",
@@ -13,8 +16,15 @@ const ROLE_COLORS: Record<string, string> = {
   vendor: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300",
 };
 
+const THEME_OPTIONS = [
+  { value: "light" as const, label: "Light", icon: Sun },
+  { value: "dark" as const, label: "Dark", icon: Moon },
+  { value: "system" as const, label: "System", icon: Monitor },
+];
+
 export default function Settings() {
   const { user: localUser } = useAuth();
+  const { theme, setTheme } = useTheme();
   const { data: me, isLoading } = useGetMe({ query: { enabled: true } });
 
   const user = me ?? localUser;
@@ -96,6 +106,25 @@ export default function Settings() {
           </CardContent>
         </Card>
       </div>
+
+      <Card className="border-border/50">
+        <CardHeader><CardTitle>Appearance</CardTitle></CardHeader>
+        <CardContent>
+          <div className="flex flex-wrap gap-3">
+            {THEME_OPTIONS.map((opt) => (
+              <Button
+                key={opt.value}
+                variant={theme === opt.value ? "default" : "outline"}
+                onClick={() => setTheme(opt.value)}
+                className="flex items-center gap-2"
+              >
+                <opt.icon className="h-4 w-4" />
+                {opt.label}
+              </Button>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }

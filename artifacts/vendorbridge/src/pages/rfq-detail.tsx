@@ -7,9 +7,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { ArrowLeft, Send, Calendar, Package, Star } from "lucide-react";
+import { ArrowLeft, Send, Calendar, Package, Star, TrendingDown, CheckCircle2, XCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
+import { motion } from "framer-motion";
 
 function useToastSafe() {
   try { return useToast(); }
@@ -18,9 +19,18 @@ function useToastSafe() {
 
 const STATUS_COLORS: Record<string, string> = {
   draft: "bg-gray-100 text-gray-700",
+  published: "bg-indigo-100 text-indigo-800",
   sent: "bg-blue-100 text-blue-800",
   closed: "bg-green-100 text-green-800",
   cancelled: "bg-red-100 text-red-800",
+};
+
+const QUOTATION_STATUS_COLORS: Record<string, string> = {
+  draft: "bg-gray-100 text-gray-600",
+  submitted: "bg-blue-100 text-blue-800",
+  negotiating: "bg-yellow-100 text-yellow-800",
+  accepted: "bg-green-100 text-green-800",
+  rejected: "bg-red-100 text-red-800",
 };
 
 export default function RfqDetail() {
@@ -30,7 +40,7 @@ export default function RfqDetail() {
   const rfqId = parseInt(id ?? "0", 10);
 
   const { data: rfq, isLoading, isError } = useGetRfq(rfqId, { query: { enabled: !!rfqId, queryKey: getGetRfqQueryKey(rfqId) } });
-  const { data: quotations, isLoading: quotationsLoading } = useListRfqQuotations(rfqId, { query: { enabled: !!rfqId } });
+  const { data: quotations, isLoading: quotationsLoading } = useListRfqQuotations(rfqId);
   const sendRfq = useSendRfq();
 
   const handleSend = async () => {
@@ -44,7 +54,10 @@ export default function RfqDetail() {
     }
   };
 
-  const lowestPrice = quotations?.length ? Math.min(...quotations.map(q => q.totalPrice)) : null;
+  const sortedQuotations = quotations?.length
+    ? [...quotations].sort((a, b) => a.totalPrice - b.totalPrice)
+    : [];
+  const lowestPrice = sortedQuotations.length ? sortedQuotations[0].totalPrice : null;
 
   if (isLoading) return (
     <div className="space-y-6">
@@ -62,12 +75,12 @@ export default function RfqDetail() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center gap-4">
           <Link href="/rfqs"><Button variant="ghost" size="sm"><ArrowLeft className="mr-2 h-4 w-4" /> Back</Button></Link>
           <div>
             <h1 className="text-3xl font-bold tracking-tight">{rfq.title}</h1>
-            <div className="flex items-center gap-2 mt-1">
+            <div className="flex items-center gap-2 mt-1 flex-wrap">
               <Badge variant="outline" className={`border-0 capitalize ${STATUS_COLORS[rfq.status] ?? ""}`}>{rfq.status}</Badge>
               <span className="font-mono text-xs text-muted-foreground">RFQ-{String(rfq.id).padStart(5, "0")}</span>
               {rfq.deadline && (
@@ -130,7 +143,10 @@ export default function RfqDetail() {
       <Card className="border-border/50">
         <CardHeader>
           <div className="flex items-center justify-between">
-            <CardTitle>Vendor Quotations ({quotations?.length ?? 0})</CardTitle>
+            <div className="flex items-center gap-2">
+              <TrendingDown className="h-5 w-5 text-muted-foreground" />
+              <CardTitle>Quotation Comparison ({quotations?.length ?? 0})</CardTitle>
+            </div>
             {rfq.status === "sent" && (
               <Link href="/quotations/new">
                 <Button variant="outline" size="sm">Submit Quotation</Button>
@@ -140,41 +156,111 @@ export default function RfqDetail() {
         </CardHeader>
         <CardContent>
           {quotationsLoading ? (
-            <Skeleton className="h-32 w-full" />
-          ) : !quotations?.length ? (
-            <p className="text-muted-foreground text-sm text-center py-8">No quotations received yet.</p>
+            <Skeleton className="h-48 w-full" />
+          ) : !sortedQuotations.length ? (
+            <div className="py-8 text-center">
+              <p className="text-muted-foreground text-sm">No quotations received yet.</p>
+              <p className="text-xs text-muted-foreground mt-1">Quotations will appear here once vendors respond.</p>
+            </div>
           ) : (
-            <Table>
-              <TableHeader>
-                <TableRow className="bg-muted/50">
-                  <TableHead>Vendor</TableHead>
-                  <TableHead className="text-right">Total Price</TableHead>
-                  <TableHead>Delivery</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Notes</TableHead>
-                  <TableHead className="text-right">Action</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {quotations.map((q) => (
-                  <TableRow key={q.id} className={q.totalPrice === lowestPrice ? "bg-green-50 dark:bg-green-950/30" : ""}>
-                    <TableCell className="font-medium">
-                      {q.vendorName || `Vendor ${q.vendorId}`}
-                      {q.totalPrice === lowestPrice && <span className="ml-2 text-xs text-green-600 font-semibold">Lowest</span>}
-                    </TableCell>
-                    <TableCell className={`text-right font-semibold ${q.totalPrice === lowestPrice ? "text-green-600" : ""}`}>
-                      ${q.totalPrice.toLocaleString("en-US", { minimumFractionDigits: 2 })}
-                    </TableCell>
-                    <TableCell>{q.deliveryDays ? `${q.deliveryDays} days` : "—"}</TableCell>
-                    <TableCell><Badge variant="outline" className="border-0 capitalize text-xs">{q.status}</Badge></TableCell>
-                    <TableCell className="text-sm text-muted-foreground max-w-[150px] truncate">{q.notes || "—"}</TableCell>
-                    <TableCell className="text-right">
-                      <Link href={`/quotations/${q.id}`}><Button variant="ghost" size="sm">View</Button></Link>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+            <div className="space-y-6">
+              {/* Summary Bar */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                <div className="p-3 rounded-lg bg-muted/30">
+                  <p className="text-xs text-muted-foreground">Lowest Price</p>
+                  <p className="text-lg font-bold text-green-600">${lowestPrice?.toLocaleString("en-US", { minimumFractionDigits: 2 })}</p>
+                </div>
+                <div className="p-3 rounded-lg bg-muted/30">
+                  <p className="text-xs text-muted-foreground">Highest Price</p>
+                  <p className="text-lg font-bold text-red-600">${sortedQuotations[sortedQuotations.length - 1].totalPrice.toLocaleString("en-US", { minimumFractionDigits: 2 })}</p>
+                </div>
+                <div className="p-3 rounded-lg bg-muted/30">
+                  <p className="text-xs text-muted-foreground">Avg Delivery</p>
+                  <p className="text-lg font-bold">{Math.round(sortedQuotations.reduce((s, q) => s + (q.deliveryDays || 0), 0) / sortedQuotations.length)} days</p>
+                </div>
+                <div className="p-3 rounded-lg bg-muted/30">
+                  <p className="text-xs text-muted-foreground">Total Quotes</p>
+                  <p className="text-lg font-bold">{sortedQuotations.length}</p>
+                </div>
+              </div>
+
+              {/* Side-by-side comparison cards */}
+              <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                {sortedQuotations.map((q, idx) => {
+                  const isBest = q.totalPrice === lowestPrice;
+                  const isAccepted = q.status === "accepted";
+                  const isRejected = q.status === "rejected";
+                  return (
+                    <motion.div
+                      key={q.id}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: idx * 0.05 }}
+                    >
+                      <Card className={`relative overflow-hidden transition-shadow hover:shadow-md border-2 ${
+                        isBest && !isRejected ? "border-green-200 dark:border-green-900" :
+                        isAccepted ? "border-blue-200 dark:border-blue-900" :
+                        isRejected ? "border-red-200 dark:border-red-900 opacity-70" :
+                        "border-border/50"
+                      }`}>
+                        {isBest && !isRejected && (
+                          <div className="absolute top-0 right-0">
+                            <div className="bg-green-500 text-white text-[10px] font-bold px-3 py-0.5 rounded-bl-lg flex items-center gap-1">
+                              <Star className="h-3 w-3 fill-white" /> BEST VALUE
+                            </div>
+                          </div>
+                        )}
+                        {isAccepted && (
+                          <div className="absolute top-0 left-0">
+                            <div className="bg-blue-500 text-white text-[10px] font-bold px-3 py-0.5 rounded-br-lg flex items-center gap-1">
+                              <CheckCircle2 className="h-3 w-3" /> ACCEPTED
+                            </div>
+                          </div>
+                        )}
+                        <CardContent className="p-4">
+                          <div className="flex items-center justify-between mb-3">
+                            <div>
+                              <p className="font-semibold">{q.vendorName || `Vendor ${q.vendorId}`}</p>
+                              <Badge variant="outline" className={`border-0 capitalize text-xs mt-1 ${QUOTATION_STATUS_COLORS[q.status] ?? ""}`}>
+                                {q.status.replace("_", " ")}
+                              </Badge>
+                            </div>
+                            <div className="text-right">
+                              <p className={`text-xl font-bold ${isBest && !isRejected ? "text-green-600" : ""}`}>
+                                ${q.totalPrice.toLocaleString("en-US", { minimumFractionDigits: 2 })}
+                              </p>
+                              {isBest && !isRejected && (
+                                <p className="text-[10px] text-green-600 font-medium">Lowest Price</p>
+                              )}
+                            </div>
+                          </div>
+                          <div className="space-y-1.5 text-sm">
+                            <div className="flex justify-between text-muted-foreground">
+                              <span>Delivery</span>
+                              <span className="font-medium text-foreground">{q.deliveryDays ? `${q.deliveryDays} days` : "—"}</span>
+                            </div>
+                            <div className="flex justify-between text-muted-foreground">
+                              <span>Items</span>
+                              <span className="font-medium text-foreground">{q.items?.length ?? 0}</span>
+                            </div>
+                            {q.notes && (
+                              <div className="pt-1 border-t border-border/50">
+                                <p className="text-xs text-muted-foreground line-clamp-2">{q.notes}</p>
+                              </div>
+                            )}
+                          </div>
+                          <div className="mt-3">
+                            <Link href={`/quotations/${q.id}`}>
+                              <Button variant="outline" size="sm" className="w-full">View Details</Button>
+                            </Link>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </motion.div>
+                  );
+                })}
+              </div>
+            </div>
           )}
         </CardContent>
       </Card>

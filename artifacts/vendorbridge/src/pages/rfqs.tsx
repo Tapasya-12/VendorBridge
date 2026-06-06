@@ -11,24 +11,28 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Search, Plus, Filter, Calendar } from "lucide-react";
+import { Search, Plus, Calendar, FileText, Filter } from "lucide-react";
 import { format } from "date-fns";
+import { motion } from "framer-motion";
+
+const STATUS_COLORS: Record<string, string> = {
+  sent: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300",
+  published: "bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-300",
+  closed: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300",
+  draft: "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300",
+  cancelled: "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300",
+};
 
 export default function Rfqs() {
   const [search, setSearch] = useState("");
-  const { data: rfqs, isLoading, isError } = useListRfqs({ search: search || undefined });
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "sent": return "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300";
-      case "closed": return "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300";
-      case "draft": return "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300";
-      case "cancelled": return "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300";
-      default: return "bg-primary/10 text-primary";
-    }
-  };
+  const [statusFilter, setStatusFilter] = useState("all");
+  const params: Record<string, string> = {};
+  if (search) params.search = search;
+  if (statusFilter !== "all") params.status = statusFilter;
+  const { data: rfqs, isLoading, isError } = useListRfqs(Object.keys(params).length ? params : undefined);
 
   return (
     <div className="space-y-6">
@@ -54,12 +58,23 @@ export default function Rfqs() {
             className="pl-9"
           />
         </div>
-        <Button variant="outline" className="w-full sm:w-auto">
-          <Filter className="mr-2 h-4 w-4" /> Filter
-        </Button>
+        <Select value={statusFilter} onValueChange={setStatusFilter}>
+          <SelectTrigger className="w-44">
+            <Filter className="mr-2 h-4 w-4" />
+            <SelectValue placeholder="Filter by status" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Statuses</SelectItem>
+            <SelectItem value="draft">Draft</SelectItem>
+            <SelectItem value="published">Published</SelectItem>
+            <SelectItem value="sent">Sent</SelectItem>
+            <SelectItem value="closed">Closed</SelectItem>
+            <SelectItem value="cancelled">Cancelled</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
 
-      <div className="rounded-md border border-border/50 bg-card overflow-hidden">
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="rounded-md border border-border/50 bg-card overflow-hidden">
         <Table>
           <TableHeader>
             <TableRow className="bg-muted/50">
@@ -85,19 +100,34 @@ export default function Rfqs() {
               ))
             ) : isError ? (
               <TableRow>
-                <TableCell colSpan={6} className="h-24 text-center text-destructive">
-                  Failed to load RFQs.
+                <TableCell colSpan={6} className="h-32 text-center text-destructive">
+                  <p className="font-medium">Failed to load RFQs.</p>
+                  <p className="text-sm mt-1">Please try again later.</p>
                 </TableCell>
               </TableRow>
             ) : rfqs?.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={6} className="h-24 text-center text-muted-foreground">
-                  No RFQs found.
+                <TableCell colSpan={6} className="h-32 text-center">
+                  <div className="flex flex-col items-center justify-center">
+                    <FileText className="h-8 w-8 text-muted-foreground mb-2" />
+                    <p className="text-muted-foreground font-medium">
+                      {search ? "No RFQs match your search." : "No RFQs yet."}
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {search ? "Try a different search term." : "Create your first request for quotation."}
+                    </p>
+                  </div>
                 </TableCell>
               </TableRow>
             ) : (
-              rfqs?.map((rfq) => (
-                <TableRow key={rfq.id}>
+              rfqs?.map((rfq, idx) => (
+                <motion.tr
+                  key={rfq.id}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: idx * 0.03 }}
+                  className="border-b transition-colors hover:bg-muted/50"
+                >
                   <TableCell className="font-medium">
                     <div className="flex flex-col">
                       <span>{rfq.title}</span>
@@ -108,7 +138,7 @@ export default function Rfqs() {
                     {rfq.description || "No description"}
                   </TableCell>
                   <TableCell>
-                    <Badge variant="outline" className={`border-0 capitalize ${getStatusColor(rfq.status)}`}>
+                    <Badge variant="outline" className={`border-0 capitalize ${STATUS_COLORS[rfq.status] ?? ""}`}>
                       {rfq.status}
                     </Badge>
                   </TableCell>
@@ -126,12 +156,12 @@ export default function Rfqs() {
                       <Button variant="ghost" size="sm">View</Button>
                     </Link>
                   </TableCell>
-                </TableRow>
+                </motion.tr>
               ))
             )}
           </TableBody>
         </Table>
-      </div>
+      </motion.div>
     </div>
   );
 }

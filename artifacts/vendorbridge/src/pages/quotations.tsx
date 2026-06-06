@@ -13,9 +13,9 @@ import { motion } from "framer-motion";
 const STATUS_COLORS: Record<string, string> = {
   draft: "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300",
   submitted: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300",
+  negotiating: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300",
   accepted: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300",
   rejected: "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300",
-  under_review: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300",
 };
 
 export default function Quotations() {
@@ -41,7 +41,7 @@ export default function Quotations() {
             <SelectItem value="all">All Statuses</SelectItem>
             <SelectItem value="draft">Draft</SelectItem>
             <SelectItem value="submitted">Submitted</SelectItem>
-            <SelectItem value="under_review">Under Review</SelectItem>
+            <SelectItem value="negotiating">Negotiating</SelectItem>
             <SelectItem value="accepted">Accepted</SelectItem>
             <SelectItem value="rejected">Rejected</SelectItem>
           </SelectContent>

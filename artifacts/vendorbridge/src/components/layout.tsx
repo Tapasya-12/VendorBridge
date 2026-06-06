@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useMemo } from "react";
 import { Link, useLocation } from "wouter";
 import { 
   LayoutDashboard, 
@@ -31,7 +31,7 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import { useAuth } from "@/hooks/use-auth";
-import { useLogout } from "@workspace/api-client-react";
+import { useListNotifications, useLogout } from "@workspace/api-client-react";
 import { Button } from "./ui/button";
 
 const NAV_ITEMS = [
@@ -53,6 +53,8 @@ export function AppSidebar() {
   const { user, logout: localLogout } = useAuth();
   const { state } = useSidebar();
   const logoutMutation = useLogout();
+  const { data: unreadNotifications } = useListNotifications({ unreadOnly: true });
+  const unreadCount = unreadNotifications?.length ?? 0;
 
   const handleLogout = async () => {
     try {
@@ -83,6 +85,7 @@ export function AppSidebar() {
             <SidebarMenu>
               {NAV_ITEMS.map((item) => {
                 const isActive = location.startsWith(item.url) && (item.url !== "/" || location === "/");
+                const showBadge = item.title === "Notifications" && unreadCount > 0;
                 return (
                   <SidebarMenuItem key={item.title}>
                     <SidebarMenuButton 
@@ -91,7 +94,14 @@ export function AppSidebar() {
                       tooltip={item.title}
                     >
                       <Link href={item.url} data-testid={`nav-${item.title.toLowerCase().replace(/\s+/g, "-")}`}>
-                        <item.icon />
+                        <div className="relative">
+                          <item.icon />
+                          {showBadge && (
+                            <span className="absolute -top-1.5 -right-1.5 flex items-center justify-center w-4 h-4 text-[10px] font-bold text-white bg-red-500 rounded-full">
+                              {unreadCount > 9 ? "9+" : unreadCount}
+                            </span>
+                          )}
+                        </div>
                         <span>{item.title}</span>
                       </Link>
                     </SidebarMenuButton>
@@ -129,8 +139,10 @@ export function AppSidebar() {
 }
 
 export function Layout({ children }: { children: React.ReactNode }) {
-  const { isAuthenticated, isLoading } = useAuth();
+  const { isAuthenticated, isLoading, user } = useAuth();
   const [location, setLocation] = useLocation();
+  const { data: unreadNotifications } = useListNotifications({ unreadOnly: true });
+  const unreadCount = unreadNotifications?.length ?? 0;
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated && !['/login', '/signup', '/forgot-password'].includes(location)) {
@@ -154,10 +166,55 @@ export function Layout({ children }: { children: React.ReactNode }) {
       <div className="flex min-h-screen w-full bg-slate-50 dark:bg-slate-950">
         <AppSidebar />
         <div className="flex-1 flex flex-col min-w-0">
-          <header className="h-16 flex items-center px-4 border-b bg-white dark:bg-slate-900 shrink-0 print:hidden gap-4">
+          <header className="h-14 flex items-center px-4 border-b bg-white dark:bg-slate-900 shrink-0 print:hidden gap-3">
             <SidebarTrigger />
+            {useMemo(() => {
+              const parts = location.split("/").filter(Boolean);
+              if (parts.length === 0) return null;
+              const labels: Record<string, string> = {
+                dashboard: "Dashboard", vendors: "Vendors", rfqs: "RFQs",
+                quotations: "Quotations", approvals: "Approvals",
+                "purchase-orders": "Purchase Orders", invoices: "Invoices",
+                "activity-logs": "Activity Logs", analytics: "Analytics",
+                notifications: "Notifications", settings: "Settings",
+              };
+              return (
+                <nav className="flex items-center gap-1.5 text-sm text-muted-foreground min-w-0">
+                  <Link href="/dashboard" className="hover:text-foreground transition-colors truncate">Home</Link>
+                  {parts.map((part, i) => {
+                    const path = "/" + parts.slice(0, i + 1).join("/");
+                    const isLast = i === parts.length - 1;
+                    const label = labels[part] || part.charAt(0).toUpperCase() + part.slice(1);
+                    return (
+                      <React.Fragment key={path}>
+                        <span className="text-muted-foreground/40 mx-0.5">/</span>
+                        {isLast ? (
+                          <span className="text-foreground font-medium truncate">{label}</span>
+                        ) : (
+                          <Link href={path} className="hover:text-foreground transition-colors truncate">{label}</Link>
+                        )}
+                      </React.Fragment>
+                    );
+                  })}
+                </nav>
+              );
+            }, [location])}
             <div className="flex-1" />
-            {/* Header actions can go here */}
+            <div className="flex items-center gap-3">
+              <Link href="/notifications" className="relative">
+                <Bell className="h-5 w-5 text-muted-foreground hover:text-foreground transition-colors" />
+                {unreadCount > 0 && (
+                  <span className="absolute -top-1.5 -right-1.5 flex items-center justify-center w-4 h-4 text-[10px] font-bold text-white bg-red-500 rounded-full">
+                    {unreadCount > 9 ? "9+" : unreadCount}
+                  </span>
+                )}
+              </Link>
+              {user && (
+                <div className="hidden sm:flex items-center gap-2 text-sm">
+                  <span className="text-muted-foreground">{user.name}</span>
+                </div>
+              )}
+            </div>
           </header>
           <main className="flex-1 p-6 overflow-auto">
             <div className="mx-auto max-w-6xl">

@@ -2,7 +2,7 @@ import React from "react";
 import { useGetDashboardSummary } from "@workspace/api-client-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { FileText, Users, ShoppingCart, Receipt, DollarSign, CheckSquare } from "lucide-react";
+import { FileText, Users, ShoppingCart, Receipt, DollarSign, CheckSquare, TrendingUp, BarChart3 } from "lucide-react";
 import { motion } from "framer-motion";
 import { Link } from "wouter";
 
@@ -67,6 +67,20 @@ export default function Dashboard() {
       color: "text-purple-500",
       link: "/purchase-orders",
     },
+    {
+      title: "Invoices",
+      value: summary.totalInvoices,
+      icon: Receipt,
+      color: "text-cyan-500",
+      link: "/invoices",
+    },
+    {
+      title: "Total Spend",
+      value: summary.totalSpend ? `$${Number(summary.totalSpend).toLocaleString("en-US", { maximumFractionDigits: 0 })}` : "$0",
+      icon: TrendingUp,
+      color: "text-emerald-500",
+      link: "/analytics",
+    },
   ];
 
   return (
@@ -76,7 +90,7 @@ export default function Dashboard() {
         <p className="text-muted-foreground mt-1">Overview of procurement activities and metrics.</p>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
         {kpis.map((kpi, index) => (
           <motion.div
             key={kpi.title}
@@ -100,7 +114,7 @@ export default function Dashboard() {
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
-        <Card className="lg:col-span-4 border-border/50">
+        <Card className="lg:col-span-3 border-border/50">
           <CardHeader>
             <CardTitle>Recent RFQs</CardTitle>
           </CardHeader>
@@ -111,20 +125,50 @@ export default function Dashboard() {
                   <div key={rfq.id} className="flex items-center justify-between border-b pb-4 last:border-0 last:pb-0">
                     <div>
                       <p className="font-medium">{rfq.title}</p>
-                      <p className="text-sm text-muted-foreground">ID: {rfq.id} • Status: <span className="capitalize">{rfq.status}</span></p>
+                      <p className="text-sm text-muted-foreground">
+                        <span className={`inline-block w-2 h-2 rounded-full mr-1 ${rfq.status === "sent" ? "bg-blue-500" : rfq.status === "closed" ? "bg-green-500" : rfq.status === "draft" ? "bg-gray-400" : "bg-red-500"}`} />
+                        {rfq.status}
+                      </p>
                     </div>
                     <Link href={`/rfqs/${rfq.id}`}>
-                      <span className="text-sm text-primary hover:underline cursor-pointer">View</span>
+                      <span className="text-sm text-primary hover:underline cursor-pointer font-medium">View &rarr;</span>
                     </Link>
                   </div>
                 ))}
               </div>
             ) : (
-              <p className="text-sm text-muted-foreground">No recent RFQs.</p>
+              <p className="text-sm text-muted-foreground text-center py-8">No recent RFQs.</p>
             )}
           </CardContent>
         </Card>
-        <Card className="lg:col-span-3 border-border/50">
+        <Card className="lg:col-span-2 border-border/50">
+          <CardHeader>
+            <CardTitle>RFQ Status</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {summary.rfqStatusBreakdown?.length ? (
+              <div className="space-y-3">
+                {summary.rfqStatusBreakdown.map((item) => (
+                  <div key={item.status} className="flex items-center justify-between">
+                    <span className="text-sm capitalize text-muted-foreground">{item.status}</span>
+                    <div className="flex items-center gap-2">
+                      <div className="w-24 h-2 rounded-full bg-muted overflow-hidden">
+                        <div
+                          className={`h-full rounded-full ${item.status === "sent" ? "bg-blue-500" : item.status === "closed" ? "bg-green-500" : item.status === "draft" ? "bg-gray-400" : "bg-red-500"}`}
+                          style={{ width: `${Math.min(100, (item.count / Math.max(...summary.rfqStatusBreakdown.map(i => i.count))) * 100)}%` }}
+                        />
+                      </div>
+                      <span className="text-sm font-medium w-6 text-right">{item.count}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-sm text-muted-foreground text-center py-8">No data.</p>
+            )}
+          </CardContent>
+        </Card>
+        <Card className="lg:col-span-2 border-border/50">
           <CardHeader>
             <CardTitle>Recent Invoices</CardTitle>
           </CardHeader>
@@ -134,18 +178,18 @@ export default function Dashboard() {
                 {summary.recentInvoices.map((inv) => (
                   <div key={inv.id} className="flex items-center justify-between border-b pb-4 last:border-0 last:pb-0">
                     <div>
-                      <p className="font-medium">{inv.invoiceNumber}</p>
-                      <p className="text-sm text-muted-foreground">{inv.vendorName}</p>
+                      <p className="font-medium text-sm">{inv.invoiceNumber}</p>
+                      <p className="text-xs text-muted-foreground">{inv.vendorName}</p>
                     </div>
                     <div className="text-right">
-                      <p className="font-medium">${inv.totalAmount.toFixed(2)}</p>
+                      <p className="font-medium text-sm">${inv.totalAmount.toFixed(2)}</p>
                       <p className="text-xs text-muted-foreground capitalize">{inv.status}</p>
                     </div>
                   </div>
                 ))}
               </div>
             ) : (
-              <p className="text-sm text-muted-foreground">No recent invoices.</p>
+              <p className="text-sm text-muted-foreground text-center py-8">No recent invoices.</p>
             )}
           </CardContent>
         </Card>

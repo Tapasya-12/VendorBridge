@@ -1,13 +1,14 @@
-import React from "react";
+import React, { useState } from "react";
 import { useParams, useLocation, Link } from "wouter";
-import { useGetPurchaseOrder, useUpdatePurchaseOrder, getGetPurchaseOrderQueryKey, getListPurchaseOrdersQueryKey } from "@workspace/api-client-react";
+import { useGetPurchaseOrder, useUpdatePurchaseOrder, getGetPurchaseOrderQueryKey, getListPurchaseOrdersQueryKey, PurchaseOrderUpdateStatus } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ArrowLeft, FileText } from "lucide-react";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import { ArrowLeft, FileText, AlertTriangle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 function useToastSafe() {
@@ -17,8 +18,11 @@ function useToastSafe() {
 
 const STATUS_COLORS: Record<string, string> = {
   draft: "bg-gray-100 text-gray-700",
-  confirmed: "bg-blue-100 text-blue-800",
-  delivered: "bg-green-100 text-green-800",
+  issued: "bg-blue-100 text-blue-800",
+  acknowledged: "bg-purple-100 text-purple-800",
+  partially_received: "bg-yellow-100 text-yellow-800",
+  received: "bg-green-100 text-green-800",
+  fulfilled: "bg-emerald-100 text-emerald-800",
   cancelled: "bg-red-100 text-red-800",
 };
 
@@ -28,11 +32,21 @@ export default function PurchaseOrderDetail() {
   const { toast } = useToastSafe();
   const queryClient = useQueryClient();
   const poId = parseInt(id ?? "0", 10);
+  const [pendingStatus, setPendingStatus] = useState<string | null>(null);
 
   const { data: po, isLoading, isError } = useGetPurchaseOrder(poId, { query: { enabled: !!poId, queryKey: getGetPurchaseOrderQueryKey(poId) } });
   const updatePO = useUpdatePurchaseOrder();
 
-  const updateStatus = async (status: string) => {
+  const updateStatus = async (status: PurchaseOrderUpdateStatus) => {
+    if (status === "cancelled" && po?.status !== "cancelled") {
+      setPendingStatus(status);
+      return;
+    }
+    await doUpdateStatus(status);
+  };
+
+  const doUpdateStatus = async (status: PurchaseOrderUpdateStatus) => {
+    setPendingStatus(null);
     try {
       await updatePO.mutateAsync({ id: poId, data: { status } });
       await queryClient.invalidateQueries({ queryKey: getGetPurchaseOrderQueryKey(poId) });
@@ -75,11 +89,33 @@ export default function PurchaseOrderDetail() {
             <SelectTrigger className="w-40"><SelectValue /></SelectTrigger>
             <SelectContent>
               <SelectItem value="draft">Draft</SelectItem>
-              <SelectItem value="confirmed">Confirmed</SelectItem>
-              <SelectItem value="delivered">Delivered</SelectItem>
-              <SelectItem value="cancelled">Cancelled</SelectItem>
+              <SelectItem value="issued">Issued</SelectItem>
+              <SelectItem value="acknowledged">Acknowledged</SelectItem>
+              <SelectItem value="partially_received">Partially Received</SelectItem>
+              <SelectItem value="received">Received</SelectItem>
+              <SelectItem value="fulfilled">Fulfilled</SelectItem>
+              <SelectItem value="cancelled" className="text-destructive">Cancel</SelectItem>
             </SelectContent>
           </Select>
+
+          <AlertDialog open={pendingStatus === "cancelled"} onOpenChange={(open) => !open && setPendingStatus(null)}>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle className="flex items-center gap-2">
+                  <AlertTriangle className="h-5 w-5 text-destructive" /> Cancel Purchase Order?
+                </AlertDialogTitle>
+                <AlertDialogDescription>
+                  This will cancel <strong>{po.poNumber}</strong>. This action can be reversed by changing the status back.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Keep Active</AlertDialogCancel>
+                <AlertDialogAction onClick={() => doUpdateStatus("cancelled")} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                  Yes, Cancel Order
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
           <Link href="/invoices/new">
             <Button variant="outline"><FileText className="mr-2 h-4 w-4" /> Generate Invoice</Button>
           </Link>

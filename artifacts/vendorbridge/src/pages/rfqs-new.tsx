@@ -7,8 +7,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Checkbox } from "@/components/ui/checkbox";
-import { ArrowLeft, Plus, Trash2 } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { ArrowLeft, Plus, Trash2, X, Search } from "lucide-react";
 import { Link } from "wouter";
 import { useToast } from "@/hooks/use-toast";
 
@@ -28,6 +28,7 @@ export default function RfqsNew() {
 
   const [form, setForm] = useState({ title: "", description: "", deadline: "" });
   const [selectedVendors, setSelectedVendors] = useState<number[]>([]);
+  const [vendorSearch, setVendorSearch] = useState("");
   const [items, setItems] = useState<LineItem[]>([{ productName: "", description: "", quantity: "1", unit: "pcs" }]);
 
   const toggleVendor = (id: number) => {
@@ -127,19 +128,63 @@ export default function RfqsNew() {
 
         <Card className="border-border/50">
           <CardHeader><CardTitle>Select Vendors ({selectedVendors.length} selected)</CardTitle></CardHeader>
-          <CardContent>
+          <CardContent className="space-y-4">
             {vendors?.length ? (
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                {vendors.map(v => (
-                  <div key={v.id} className="flex items-center gap-2 p-3 rounded-lg border border-border/50 hover:bg-muted/50 cursor-pointer" onClick={() => toggleVendor(v.id)}>
-                    <Checkbox checked={selectedVendors.includes(v.id)} onCheckedChange={() => toggleVendor(v.id)} id={`v-${v.id}`} />
-                    <label htmlFor={`v-${v.id}`} className="flex-1 cursor-pointer">
-                      <p className="text-sm font-medium">{v.name}</p>
-                      <p className="text-xs text-muted-foreground">{v.category}</p>
-                    </label>
+              <>
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Search vendors..."
+                    className="pl-9"
+                    value={vendorSearch}
+                    onChange={(e) => setVendorSearch(e.target.value)}
+                  />
+                </div>
+                {selectedVendors.length > 0 && (
+                  <div className="flex flex-wrap gap-2">
+                    {selectedVendors.map(id => {
+                      const v = vendors.find(v => v.id === id);
+                      return v ? (
+                        <Badge key={id} variant="secondary" className="gap-1 pr-1">
+                          {v.name}
+                          <button onClick={() => toggleVendor(id)} className="ml-1 hover:text-destructive">
+                            <X className="h-3 w-3" />
+                          </button>
+                        </Badge>
+                      ) : null;
+                    })}
                   </div>
-                ))}
-              </div>
+                )}
+                <div className="max-h-48 overflow-y-auto space-y-1 rounded-lg border border-border/50 p-1">
+                  {vendors
+                    .filter(v => v.name.toLowerCase().includes(vendorSearch.toLowerCase()) || v.category?.toLowerCase().includes(vendorSearch.toLowerCase()))
+                    .map(v => {
+                      const isSelected = selectedVendors.includes(v.id);
+                      return (
+                        <div
+                          key={v.id}
+                          onClick={() => toggleVendor(v.id)}
+                          className={`flex items-center justify-between px-3 py-2 rounded-md cursor-pointer transition-colors ${
+                            isSelected ? "bg-primary/10 text-primary" : "hover:bg-muted/50"
+                          }`}
+                        >
+                          <div>
+                            <p className="text-sm font-medium">{v.name}</p>
+                            <p className="text-xs text-muted-foreground">{v.category}</p>
+                          </div>
+                          <div className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-colors ${
+                            isSelected ? "bg-primary border-primary text-primary-foreground" : "border-muted-foreground/30"
+                          }`}>
+                            {isSelected && <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  {vendors.filter(v => v.name.toLowerCase().includes(vendorSearch.toLowerCase())).length === 0 && (
+                    <p className="text-sm text-muted-foreground text-center py-3">No vendors match your search.</p>
+                  )}
+                </div>
+              </>
             ) : (
               <p className="text-sm text-muted-foreground">No vendors available. <Link href="/vendors/new"><span className="text-primary underline cursor-pointer">Add vendors</span></Link> first.</p>
             )}

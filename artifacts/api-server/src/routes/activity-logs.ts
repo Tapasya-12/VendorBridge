@@ -10,11 +10,11 @@ router.get("/activity-logs", async (req, res): Promise<void> => {
   if (entityType) conditions.push(eq(activityLogsTable.entityType, entityType));
   if (entityId) conditions.push(eq(activityLogsTable.entityId, parseInt(entityId, 10)));
 
-  let query = db.select().from(activityLogsTable);
+  let query = db.select().from(activityLogsTable).orderBy(desc(activityLogsTable.createdAt)).limit(limit ? parseInt(limit, 10) : 100) as any;
   if (conditions.length > 0) {
-    query = query.where(conditions.length === 1 ? conditions[0] : conditions[0]) as typeof query;
+    query = db.select().from(activityLogsTable).where(conditions.length === 1 ? conditions[0] : conditions[0]).orderBy(desc(activityLogsTable.createdAt)).limit(limit ? parseInt(limit, 10) : 100);
   }
-  const rows = await db.select().from(activityLogsTable).orderBy(desc(activityLogsTable.createdAt)).limit(limit ? parseInt(limit, 10) : 100);
+  const rows = await query;
 
   const results = await Promise.all(rows.map(async (log) => {
     let userName: string | null = null;

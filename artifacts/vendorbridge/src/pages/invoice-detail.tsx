@@ -1,16 +1,14 @@
 import React, { useState } from "react";
 import { useParams, Link } from "wouter";
-import { useGetInvoice, useUpdateInvoice, useSendInvoiceEmail, getGetInvoiceQueryKey, getListInvoicesQueryKey } from "@workspace/api-client-react";
-import { useQueryClient } from "@tanstack/react-query";
+import { useGetInvoice, useSendInvoiceEmail, getGetInvoiceQueryKey } from "@workspace/api-client-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
-import { ArrowLeft, Printer, Mail, CheckCircle } from "lucide-react";
+import { ArrowLeft, Printer, Mail, CheckCircle, Download } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 function useToastSafe() {
@@ -21,32 +19,27 @@ function useToastSafe() {
 const STATUS_COLORS: Record<string, string> = {
   draft: "bg-gray-100 text-gray-700",
   sent: "bg-blue-100 text-blue-800",
+  viewed: "bg-purple-100 text-purple-800",
+  issued: "bg-indigo-100 text-indigo-800",
   paid: "bg-green-100 text-green-800",
+  partially_paid: "bg-amber-100 text-amber-800",
   overdue: "bg-red-100 text-red-800",
+  disputed: "bg-orange-100 text-orange-800",
   cancelled: "bg-gray-100 text-gray-500",
 };
 
 export default function InvoiceDetail() {
   const { id } = useParams<{ id: string }>();
   const { toast } = useToastSafe();
-  const queryClient = useQueryClient();
   const invId = parseInt(id ?? "0", 10);
   const [emailInput, setEmailInput] = useState("");
   const [emailDialogOpen, setEmailDialogOpen] = useState(false);
 
   const { data: inv, isLoading, isError } = useGetInvoice(invId, { query: { enabled: !!invId, queryKey: getGetInvoiceQueryKey(invId) } });
-  const updateInvoice = useUpdateInvoice();
   const sendEmail = useSendInvoiceEmail();
 
-  const updateStatus = async (status: string) => {
-    try {
-      await updateInvoice.mutateAsync({ id: invId, data: { status } });
-      await queryClient.invalidateQueries({ queryKey: getGetInvoiceQueryKey(invId) });
-      await queryClient.invalidateQueries({ queryKey: getListInvoicesQueryKey() });
-      toast({ title: "Status updated" });
-    } catch {
-      toast({ title: "Error", description: "Failed to update status." });
-    }
+  const handleDownloadPdf = () => {
+    window.print();
   };
 
   const handleSendEmail = async () => {
@@ -89,16 +82,6 @@ export default function InvoiceDetail() {
           </div>
         </div>
         <div className="flex gap-2 items-center">
-          <Select value={inv.status} onValueChange={updateStatus} disabled={updateInvoice.isPending}>
-            <SelectTrigger className="w-36"><SelectValue /></SelectTrigger>
-            <SelectContent>
-              <SelectItem value="draft">Draft</SelectItem>
-              <SelectItem value="sent">Sent</SelectItem>
-              <SelectItem value="paid">Paid</SelectItem>
-              <SelectItem value="overdue">Overdue</SelectItem>
-              <SelectItem value="cancelled">Cancelled</SelectItem>
-            </SelectContent>
-          </Select>
           <Dialog open={emailDialogOpen} onOpenChange={setEmailDialogOpen}>
             <DialogTrigger asChild>
               <Button variant="outline" data-testid="btn-send-email"><Mail className="mr-2 h-4 w-4" /> Send Email</Button>
@@ -118,6 +101,7 @@ export default function InvoiceDetail() {
             </DialogContent>
           </Dialog>
           <Button variant="outline" onClick={() => window.print()} data-testid="btn-print"><Printer className="mr-2 h-4 w-4" /> Print</Button>
+          <Button variant="outline" onClick={handleDownloadPdf} data-testid="btn-download-pdf"><Download className="mr-2 h-4 w-4" /> Download PDF</Button>
         </div>
       </div>
 

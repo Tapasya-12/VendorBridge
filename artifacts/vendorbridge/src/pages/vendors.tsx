@@ -13,22 +13,23 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Search, Plus, Filter } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Search, Plus, Users as UsersIcon, Filter } from "lucide-react";
 import { motion } from "framer-motion";
+
+const STATUS_COLORS: Record<string, string> = {
+  approved: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300",
+  pending: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300",
+  rejected: "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300",
+};
 
 export default function Vendors() {
   const [search, setSearch] = useState("");
-  const { data: vendors, isLoading, isError } = useListVendors({ search: search || undefined });
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "active": return "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300";
-      case "inactive": return "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300";
-      case "pending": return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300";
-      case "blacklisted": return "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300";
-      default: return "bg-primary/10 text-primary";
-    }
-  };
+  const [statusFilter, setStatusFilter] = useState("all");
+  const params: Record<string, string> = {};
+  if (search) params.search = search;
+  if (statusFilter !== "all") params.status = statusFilter;
+  const { data: vendors, isLoading, isError } = useListVendors(Object.keys(params).length ? params : undefined);
 
   return (
     <div className="space-y-6">
@@ -54,12 +55,21 @@ export default function Vendors() {
             className="pl-9"
           />
         </div>
-        <Button variant="outline" className="w-full sm:w-auto">
-          <Filter className="mr-2 h-4 w-4" /> Filter
-        </Button>
+        <Select value={statusFilter} onValueChange={setStatusFilter}>
+          <SelectTrigger className="w-44">
+            <Filter className="mr-2 h-4 w-4" />
+            <SelectValue placeholder="Filter by status" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Statuses</SelectItem>
+            <SelectItem value="approved">Approved</SelectItem>
+            <SelectItem value="pending">Pending</SelectItem>
+            <SelectItem value="rejected">Rejected</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
 
-      <div className="rounded-md border border-border/50 bg-card overflow-hidden">
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="rounded-md border border-border/50 bg-card overflow-hidden">
         <Table>
           <TableHeader>
             <TableRow className="bg-muted/50">
@@ -85,19 +95,34 @@ export default function Vendors() {
               ))
             ) : isError ? (
               <TableRow>
-                <TableCell colSpan={6} className="h-24 text-center text-destructive">
-                  Failed to load vendors.
+                <TableCell colSpan={6} className="h-32 text-center text-destructive">
+                  <p className="font-medium">Failed to load vendors.</p>
+                  <p className="text-sm mt-1">Please try again later.</p>
                 </TableCell>
               </TableRow>
             ) : vendors?.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={6} className="h-24 text-center text-muted-foreground">
-                  No vendors found.
+                <TableCell colSpan={6} className="h-32 text-center">
+                  <div className="flex flex-col items-center justify-center">
+                    <UsersIcon className="h-8 w-8 text-muted-foreground mb-2" />
+                    <p className="text-muted-foreground font-medium">
+                      {search ? "No vendors match your search." : "No vendors yet."}
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {search ? "Try a different search term." : "Add your first vendor to get started."}
+                    </p>
+                  </div>
                 </TableCell>
               </TableRow>
             ) : (
-              vendors?.map((vendor, index) => (
-                <TableRow key={vendor.id}>
+              vendors?.map((vendor, idx) => (
+                <motion.tr
+                  key={vendor.id}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: idx * 0.03 }}
+                  className="border-b transition-colors hover:bg-muted/50"
+                >
                   <TableCell className="font-medium">
                     <div className="flex items-center gap-2">
                       <div className="h-8 w-8 rounded-md bg-primary/10 text-primary flex items-center justify-center font-bold text-xs uppercase">
@@ -114,7 +139,7 @@ export default function Vendors() {
                     </div>
                   </TableCell>
                   <TableCell>
-                    <Badge variant="outline" className={`border-0 ${getStatusColor(vendor.status)}`}>
+                    <Badge variant="outline" className={`border-0 ${STATUS_COLORS[vendor.status] ?? ""}`}>
                       {vendor.status}
                     </Badge>
                   </TableCell>
@@ -129,12 +154,12 @@ export default function Vendors() {
                       <Button variant="ghost" size="sm">View</Button>
                     </Link>
                   </TableCell>
-                </TableRow>
+                </motion.tr>
               ))
             )}
           </TableBody>
         </Table>
-      </div>
+      </motion.div>
     </div>
   );
 }
