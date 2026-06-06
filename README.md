@@ -163,7 +163,7 @@ Vendorbridge/
 
 1. **Clone the repository**
    ```bash
-   git clone <repository-url>
+   git clone https://github.com/Tapasya-12/VendorBridge.git
    cd Vendorbridge
    ```
 
@@ -174,10 +174,14 @@ Vendorbridge/
 
 3. **Set up the database**
    
-   The project is pre-configured with Supabase. Push the database schema:
+   The project is pre-configured with Supabase. Push the database schema. Ensure your `.env` file is set up first, then run:
    ```bash
    cd lib/db
-   pnpm run push
+   # For Windows PowerShell:
+   $env:DATABASE_URL="<your-database-url>"; pnpm run push
+   
+   # For Mac/Linux:
+   DATABASE_URL="<your-database-url>" pnpm run push
    ```
 
 4. **Verify environment variables**
@@ -192,6 +196,13 @@ Vendorbridge/
    ```bash
    pnpm run build
    ```
+
+---
+
+## 🛠️ Troubleshooting
+
+- **`ERR_PNPM_IGNORED_BUILDS` on install:** If `pnpm install` blocks `esbuild` from running, update `pnpm-workspace.yaml` and set `allowBuilds: esbuild: true` or run `pnpm approve-builds`.
+- **Database Push Errors:** If `pnpm run push` fails with `DATABASE_URL, ensure the database is provisioned`, ensure you are explicitly passing the `DATABASE_URL` variable as shown in the setup steps above.
 
 ---
 
@@ -210,7 +221,7 @@ pnpm run dev
 ```
 
 ```bash
-# Terminal 2 - Frontend Development Server (Port 3000)
+# Terminal 2 - Frontend Development Server (Port 5173)
 cd artifacts/vendorbridge
 pnpm run dev
 ```
@@ -226,7 +237,7 @@ pnpm run typecheck      # Type check all packages
 
 ### Access the Application
 
-- **Frontend:** http://localhost:3000
+- **Frontend:** http://localhost:5173
 - **Backend API:** http://localhost:5000/api
 - **Health Check:** http://localhost:5000/api/health
 

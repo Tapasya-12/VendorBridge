@@ -32,7 +32,11 @@ Navigate to the database package and push the schema:
 
 ```bash
 cd lib/db
-pnpm run push
+# For Windows PowerShell:
+$env:DATABASE_URL="<your-database-url>"; pnpm run push
+
+# For Mac/Linux:
+DATABASE_URL="<your-database-url>" pnpm run push
 ```
 
 This will create all tables in your Supabase database.
@@ -73,7 +77,7 @@ cd ../vendorbridge
 pnpm run dev
 ```
 
-The frontend will run at `http://localhost:3000`
+The frontend will run at `http://localhost:5173`
 
 ## 🔑 Test Credentials
 
@@ -266,7 +270,7 @@ const vendors = await db.select().from(vendorsTable);
 
 ### Problem: "DATABASE_URL not found"
 
-**Solution:** Ensure `.env` file exists in root directory
+**Solution:** Ensure `.env` file exists in root directory and that you pass it during command execution if necessary (e.g., `$env:DATABASE_URL="..." pnpm run push`).
 
 ### Problem: "Connection timeout"
 
