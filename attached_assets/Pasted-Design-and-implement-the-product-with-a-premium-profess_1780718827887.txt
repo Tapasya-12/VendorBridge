@@ -1,0 +1,52 @@
+Design and implement the product with a premium, professional, polished, and production-ready user experience. Follow the provided documentation exactly as specified—do not add, remove, modify, assume, or invent any features, screens, workflows, business logic, fields, or functionality beyond what is explicitly defined in the requirements.
+
+Requirements:
+
+* Maintain strict adherence to the documentation and specifications.
+* Deliver a clean, modern, enterprise-grade design system with consistent spacing, typography, colors, icons, and component behavior.
+* Ensure every screen, interaction, workflow, and user journey feels refined, intuitive, and commercially deployable.
+* Apply professional UI/UX standards throughout the entire product.
+* Create a cohesive visual language across all screens and states.
+* Ensure responsive, accessible, and user-friendly layouts.
+
+Animations & Micro-Interactions:
+
+Implement smooth, meaningful, and context-aware animations across the application, including but not limited to:
+
+* Loading states
+* Processing states
+* Success states
+* Error states
+* Empty states
+* Form submission states
+* Data synchronization states
+* Navigation transitions
+* Modal and drawer transitions
+* Toast notifications
+* Authentication flows
+* File upload/download states
+* Button interactions
+* Hover, focus, and press states
+
+Animation Requirements:
+
+* Animations must feel premium, subtle, and professional.
+* Avoid excessive, distracting, or gimmicky effects.
+* Maintain consistent animation timing, easing, and motion principles.
+* Ensure animations communicate system status and improve usability.
+* Provide clear visual feedback for every user action.
+* Include proper skeleton loaders, progress indicators, and state transitions wherever applicable.
+
+Quality Standards:
+
+* Production-ready quality only.
+* No placeholder implementations.
+* No inconsistent styling.
+* No broken navigation paths.
+* No missing loading, success, or error states.
+* No unfinished interactions.
+* No UI/UX shortcuts.
+
+Final Goal:
+
+The finished product should feel like a mature, enterprise-grade software application built by a top-tier product, design, and engineering team, while remaining 100% faithful to the provided documentation and requirements.
