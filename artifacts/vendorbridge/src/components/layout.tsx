@@ -144,6 +144,38 @@ export function Layout({ children }: { children: React.ReactNode }) {
   const { data: unreadNotifications } = useListNotifications({ unreadOnly: true });
   const unreadCount = unreadNotifications?.length ?? 0;
 
+  const breadcrumbs = useMemo(() => {
+    const parts = location.split("/").filter(Boolean);
+    if (parts.length === 0) return null;
+    const labels: Record<string, string> = {
+      dashboard: "Dashboard", vendors: "Vendors", rfqs: "RFQs",
+      quotations: "Quotations", approvals: "Approvals",
+      "purchase-orders": "Purchase Orders", invoices: "Invoices",
+      "activity-logs": "Activity Logs", analytics: "Analytics",
+      notifications: "Notifications", settings: "Settings",
+    };
+    return (
+      <nav className="flex items-center gap-1.5 text-sm text-muted-foreground min-w-0">
+        <Link href="/dashboard" className="hover:text-foreground transition-colors truncate">Home</Link>
+        {parts.map((part, i) => {
+          const path = "/" + parts.slice(0, i + 1).join("/");
+          const isLast = i === parts.length - 1;
+          const label = labels[part] || part.charAt(0).toUpperCase() + part.slice(1);
+          return (
+            <React.Fragment key={path}>
+              <span className="text-muted-foreground/40 mx-0.5">/</span>
+              {isLast ? (
+                <span className="text-foreground font-medium truncate">{label}</span>
+              ) : (
+                <Link href={path} className="hover:text-foreground transition-colors truncate">{label}</Link>
+              )}
+            </React.Fragment>
+          );
+        })}
+      </nav>
+    );
+  }, [location]);
+
   useEffect(() => {
     if (!isLoading && !isAuthenticated && !['/login', '/signup', '/forgot-password'].includes(location)) {
       setLocation("/login");
@@ -168,37 +200,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <div className="flex-1 flex flex-col min-w-0">
           <header className="h-14 flex items-center px-4 border-b bg-white dark:bg-slate-900 shrink-0 print:hidden gap-3">
             <SidebarTrigger />
-            {useMemo(() => {
-              const parts = location.split("/").filter(Boolean);
-              if (parts.length === 0) return null;
-              const labels: Record<string, string> = {
-                dashboard: "Dashboard", vendors: "Vendors", rfqs: "RFQs",
-                quotations: "Quotations", approvals: "Approvals",
-                "purchase-orders": "Purchase Orders", invoices: "Invoices",
-                "activity-logs": "Activity Logs", analytics: "Analytics",
-                notifications: "Notifications", settings: "Settings",
-              };
-              return (
-                <nav className="flex items-center gap-1.5 text-sm text-muted-foreground min-w-0">
-                  <Link href="/dashboard" className="hover:text-foreground transition-colors truncate">Home</Link>
-                  {parts.map((part, i) => {
-                    const path = "/" + parts.slice(0, i + 1).join("/");
-                    const isLast = i === parts.length - 1;
-                    const label = labels[part] || part.charAt(0).toUpperCase() + part.slice(1);
-                    return (
-                      <React.Fragment key={path}>
-                        <span className="text-muted-foreground/40 mx-0.5">/</span>
-                        {isLast ? (
-                          <span className="text-foreground font-medium truncate">{label}</span>
-                        ) : (
-                          <Link href={path} className="hover:text-foreground transition-colors truncate">{label}</Link>
-                        )}
-                      </React.Fragment>
-                    );
-                  })}
-                </nav>
-              );
-            }, [location])}
+            {breadcrumbs}
             <div className="flex-1" />
             <div className="flex items-center gap-3">
               <Link href="/notifications" className="relative">
