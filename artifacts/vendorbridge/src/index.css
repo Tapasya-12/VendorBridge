@@ -66,7 +66,7 @@
   --radius-xl: calc(var(--radius) + 4px);
 }
 
-/* LIGHT MODE */
+/* LIGHT MODE — CRM Fintech Design System */
 :root {
   --button-outline: rgba(0,0,0, .10);
   --badge-outline: rgba(0,0,0, .05);
@@ -76,16 +76,18 @@
   --elevate-1: rgba(0,0,0, .03);
   --elevate-2: rgba(0,0,0, .08);
 
-  --background: 210 40% 98%;
-  --foreground: 220 10% 12%;
+  /* Page BG: #F6F7F9 */
+  --background: 220 14% 97%;
+  --foreground: 220 13% 10%;
 
+  /* Cards: pure white */
   --card: 0 0% 100%;
   --card-foreground: 222.2 84% 4.9%;
-  --card-border: 214.3 31.8% 91.4%;
+  --card-border: 0 0% 94.9%;
 
   --popover: 0 0% 100%;
   --popover-foreground: 222.2 84% 4.9%;
-  --popover-border: 214.3 31.8% 91.4%;
+  --popover-border: 0 0% 94.9%;
 
   --primary: 221.2 83.2% 53.3%;
   --primary-foreground: 210 40% 98%;
@@ -94,7 +96,7 @@
   --secondary-foreground: 222.2 47.4% 11.2%;
 
   --muted: 210 40% 96.1%;
-  --muted-foreground: 232 7% 45%;
+  --muted-foreground: 220 9% 46%;
 
   --accent: 210 40% 96.1%;
   --accent-foreground: 222.2 47.4% 11.2%;
@@ -102,16 +104,17 @@
   --destructive: 0 84.2% 60.2%;
   --destructive-foreground: 210 40% 98%;
 
-  --border: 214.3 31.8% 91.4%;
-  --input: 214.3 31.8% 91.4%;
+  --border: 0 0% 94.9%;
+  --input: 0 0% 90%;
   --ring: 221.2 83.2% 53.3%;
 
+  /* Sidebar: white */
   --sidebar: 0 0% 100%;
   --sidebar-foreground: 222.2 84% 4.9%;
-  --sidebar-border: 214.3 31.8% 91.4%;
-  --sidebar-primary: 221.2 83.2% 53.3%;
-  --sidebar-primary-foreground: 210 40% 98%;
-  --sidebar-accent: 210 40% 96.1%;
+  --sidebar-border: 0 0% 94.1%;
+  --sidebar-primary: 220 9% 10%;
+  --sidebar-primary-foreground: 0 0% 100%;
+  --sidebar-accent: 220 14% 96%;
   --sidebar-accent-foreground: 222.2 47.4% 11.2%;
   --sidebar-ring: 221.2 83.2% 53.3%;
 
@@ -121,21 +124,41 @@
   --chart-4: 262.1 83.3% 57.8%;
   --chart-5: 0 84.2% 60.2%;
 
-  --app-font-sans: 'Inter', sans-serif;
+  --app-font-sans: 'Inter', -apple-system, sans-serif;
   --app-font-serif: Georgia, serif;
   --app-font-mono: Menlo, monospace;
-  --radius: 1.25rem;
+  --radius: 1rem;
   
   --shadow-2xs: 0px 2px 0px 0px rgba(0,0,0,0.02);
   --shadow-xs: 0px 2px 0px 0px rgba(0,0,0,0.03);
-  --shadow-sm: 0px 2px 0px 0px rgba(0,0,0,0.04), 0px 1px 2px -1px rgba(0,0,0,0.04);
-  --shadow: 0px 2px 0px 0px rgba(0,0,0,0.05), 0px 1px 2px -1px rgba(0,0,0,0.05);
+  --shadow-sm: 0 1px 6px rgba(0, 0, 0, 0.06);
+  --shadow: 0 1px 6px rgba(0, 0, 0, 0.06);
   --shadow-md: 0px 2px 0px 0px rgba(0,0,0,0.06), 0px 2px 4px -1px rgba(0,0,0,0.06);
   --shadow-lg: 0px 2px 0px 0px rgba(0,0,0,0.07), 0px 4px 6px -1px rgba(0,0,0,0.07);
   --shadow-xl: 0px 2px 0px 0px rgba(0,0,0,0.08), 0px 8px 10px -1px rgba(0,0,0,0.08);
   --shadow-2xl: 0px 2px 0px 0px rgba(0,0,0,0.09);
   --tracking-normal: 0em;
   --spacing: 0.25rem;
+
+  /* CRM Design Tokens */
+  --crm-card-shadow: 0 1px 6px rgba(0,0,0,0.06);
+  --crm-card-border: #F2F2F2;
+  --crm-input-border: #E5E7EB;
+  --crm-divider: #F0F0F0;
+  --crm-hover-bg: #F9FAFB;
+  --crm-input-bg: #F3F4F6;
+  --crm-success: #16A34A;
+  --crm-success-bg: #F0FDF4;
+  --crm-danger: #DC2626;
+  --crm-danger-bg: #FEF2F2;
+  --crm-warning: #D97706;
+  --crm-warning-bg: #FFFBEB;
+  --crm-nav-active-bg: #111827;
+  --crm-blue-600: #2563EB;
+  --crm-blue-700: #1D4ED8;
+  --crm-text-primary: #111827;
+  --crm-text-secondary: #6B7280;
+  --crm-text-muted: #9CA3AF;
 
   --sidebar-primary-border: hsl(from hsl(var(--sidebar-primary)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
   --sidebar-accent-border: hsl(from hsl(var(--sidebar-accent)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
@@ -154,42 +177,42 @@
   --elevate-1: rgba(255,255,255, .04);
   --elevate-2: rgba(255,255,255, .09);
 
-  --background: 0 0% 5%;
-  --foreground: 0 0% 98%;
+  --background: 220 15% 8%;
+  --foreground: 0 0% 95%;
 
-  --card: 0 0% 5%;
+  --card: 220 15% 11%;
   --card-foreground: 0 0% 98%;
-  --card-border: 0 0% 15%;
+  --card-border: 220 10% 18%;
 
-  --popover: 0 0% 5%;
+  --popover: 220 15% 11%;
   --popover-foreground: 0 0% 98%;
-  --popover-border: 0 0% 15%;
+  --popover-border: 220 10% 18%;
 
   --primary: 217.2 91.2% 59.8%;
   --primary-foreground: 222.2 47.4% 11.2%;
 
-  --secondary: 0 0% 15%;
+  --secondary: 220 10% 18%;
   --secondary-foreground: 0 0% 98%;
 
-  --muted: 0 0% 15%;
+  --muted: 220 10% 18%;
   --muted-foreground: 0 0% 65%;
 
-  --accent: 0 0% 15%;
+  --accent: 220 10% 18%;
   --accent-foreground: 0 0% 98%;
 
   --destructive: 0 62.8% 30.6%;
   --destructive-foreground: 0 0% 98%;
 
-  --border: 0 0% 15%;
-  --input: 0 0% 15%;
+  --border: 220 10% 18%;
+  --input: 220 10% 18%;
   --ring: 217.2 91.2% 59.8%;
 
-  --sidebar: 0 0% 5%;
-  --sidebar-foreground: 0 0% 98%;
-  --sidebar-border: 0 0% 15%;
-  --sidebar-primary: 217.2 91.2% 59.8%;
-  --sidebar-primary-foreground: 0 0% 10%;
-  --sidebar-accent: 0 0% 15%;
+  --sidebar: 220 15% 8%;
+  --sidebar-foreground: 0 0% 95%;
+  --sidebar-border: 220 10% 16%;
+  --sidebar-primary: 0 0% 90%;
+  --sidebar-primary-foreground: 220 15% 10%;
+  --sidebar-accent: 220 10% 15%;
   --sidebar-accent-foreground: 0 0% 98%;
   --sidebar-ring: 217.2 91.2% 59.8%;
 
@@ -198,6 +221,17 @@
   --chart-3: 31.8 97.7% 56.9%;
   --chart-4: 262.1 83.3% 67.8%;
   --chart-5: 0 84.2% 60.2%;
+
+  --crm-card-shadow: 0 1px 6px rgba(0,0,0,0.3);
+  --crm-card-border: hsl(220, 10%, 18%);
+  --crm-input-border: hsl(220, 10%, 22%);
+  --crm-divider: hsl(220, 10%, 16%);
+  --crm-hover-bg: hsl(220, 10%, 14%);
+  --crm-input-bg: hsl(220, 10%, 15%);
+  --crm-nav-active-bg: hsl(0, 0%, 90%);
+  --crm-text-primary: hsl(0, 0%, 95%);
+  --crm-text-secondary: hsl(0, 0%, 60%);
+  --crm-text-muted: hsl(0, 0%, 45%);
 }
 
 @layer base {
@@ -207,35 +241,7 @@
 
   body {
     @apply font-sans antialiased text-foreground bg-background;
-    background-image: 
-      radial-gradient(circle at 15% 50%, rgba(37, 99, 235, 0.08), transparent 50%),
-      radial-gradient(circle at 85% 30%, rgba(0, 198, 255, 0.08), transparent 50%),
-      radial-gradient(circle at 50% 80%, rgba(37, 99, 235, 0.05), transparent 50%);
-    background-size: 100% 100%;
-    background-attachment: fixed;
     min-height: 100vh;
-  }
-
-  .dark body {
-    background-image: 
-      radial-gradient(circle at 15% 50%, rgba(255, 255, 255, 0.04), transparent 50%),
-      radial-gradient(circle at 85% 30%, rgba(255, 255, 255, 0.05), transparent 50%),
-      radial-gradient(circle at 50% 80%, rgba(255, 255, 255, 0.02), transparent 50%);
-  }
-
-  /* Professional Glassmorphism utility for shadcn components */
-  .bg-card, .bg-sidebar, .bg-popover {
-    background: rgba(255, 255, 255, 0.65) !important;
-    backdrop-filter: blur(24px) saturate(180%) !important;
-    -webkit-backdrop-filter: blur(24px) saturate(180%) !important;
-    border: 1px solid rgba(255, 255, 255, 0.8) !important;
-    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.03) !important;
-  }
-
-  .dark .bg-card, .dark .bg-sidebar, .dark .bg-popover {
-    background: rgba(18, 18, 18, 0.65) !important;
-    border: 1px solid rgba(255, 255, 255, 0.08) !important;
-    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.4) !important;
   }
 }
 

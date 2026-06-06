@@ -42,6 +42,7 @@ import ActivityLogs from "@/pages/activity-logs";
 import Analytics from "@/pages/analytics";
 import Notifications from "@/pages/notifications";
 import Settings from "@/pages/settings";
+import ProfileSetup from "@/pages/profile-setup";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -58,6 +59,7 @@ function Router() {
       <Route path="/login" component={Login} />
       <Route path="/signup" component={Signup} />
       <Route path="/forgot-password" component={ForgotPassword} />
+      <Route path="/profile-setup" component={ProfileSetup} />
 
       <Route path="/">
         <Layout><Dashboard /></Layout>

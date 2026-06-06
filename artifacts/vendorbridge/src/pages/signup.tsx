@@ -19,6 +19,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { motion } from "framer-motion";
+import { Logo } from "@/components/logo";
 
 const signupSchema = z.object({
   name: z.string().min(2, "Name is required"),
@@ -53,7 +54,7 @@ export default function Signup() {
         title: "Account created",
         description: "Welcome to VendorBridge.",
       });
-      setLocation("/dashboard");
+      setLocation("/profile-setup");
     } catch (error) {
       toast({
         variant: "destructive",
@@ -72,11 +73,12 @@ export default function Signup() {
         className="w-full max-w-md"
       >
         <div className="flex justify-center mb-8">
-          <div className="flex items-center gap-2 font-bold text-2xl text-primary tracking-tight">
-            <div className="w-10 h-10 bg-primary text-primary-foreground rounded-lg flex items-center justify-center text-xl shadow-lg">
-              VB
-            </div>
-            <span>VendorBridge</span>
+          <div className="flex items-center gap-2 font-bold text-3xl tracking-tight">
+            <Logo className="w-12 h-12 shrink-0" />
+            <span>
+              <span style={{ color: '#235A7B' }}>Vendor</span>
+              <span style={{ color: '#79AE61' }}>Bridge</span>
+            </span>
           </div>
         </div>
 

@@ -24,6 +24,8 @@ function safeUser(user: typeof usersTable.$inferSelect) {
     role: user.role,
     isActive: user.isActive,
     vendorId: user.vendorId,
+    phone: user.phone,
+    avatarUrl: user.avatarUrl,
     createdAt: user.createdAt.toISOString(),
   };
 }
@@ -91,6 +93,28 @@ router.get("/auth/me", async (req, res): Promise<void> => {
     res.status(401).json({ error: "Unauthorized" });
     return;
   }
+  res.json(safeUser(user));
+});
+
+router.patch("/auth/me", async (req, res): Promise<void> => {
+  const authHeader = req.headers.authorization;
+  if (!authHeader?.startsWith("Bearer ")) {
+    res.status(401).json({ error: "Unauthorized" });
+    return;
+  }
+  const token = authHeader.slice(7);
+  const [session] = await db.select().from(sessionsTable).where(eq(sessionsTable.token, token));
+  if (!session || session.expiresAt < new Date()) {
+    res.status(401).json({ error: "Unauthorized" });
+    return;
+  }
+  const { name, phone, avatarUrl } = req.body;
+  const updates: Record<string, unknown> = {};
+  if (name !== undefined) updates.name = name;
+  if (phone !== undefined) updates.phone = phone;
+  if (avatarUrl !== undefined) updates.avatarUrl = avatarUrl;
+  const [user] = await db.update(usersTable).set(updates).where(eq(usersTable.id, session.userId)).returning();
+  if (!user) { res.status(404).json({ error: "User not found" }); return; }
   res.json(safeUser(user));
 });
 

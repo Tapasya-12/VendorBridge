@@ -4,6 +4,9 @@ import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForgotPassword } from "@workspace/api-client-react";
+import { motion } from "framer-motion";
+import { LoadingSpinner } from "@/components/ui/loading-spinner";
+import { Logo } from "@/components/logo";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import {
@@ -63,11 +66,12 @@ export default function ForgotPassword() {
         className="w-full max-w-md"
       >
         <div className="flex justify-center mb-8">
-          <div className="flex items-center gap-2 font-bold text-2xl text-primary tracking-tight">
-            <div className="w-10 h-10 bg-primary text-primary-foreground rounded-lg flex items-center justify-center text-xl shadow-lg">
-              VB
-            </div>
-            <span>VendorBridge</span>
+          <div className="flex items-center gap-2 font-bold text-3xl tracking-tight">
+            <Logo className="w-12 h-12 shrink-0" />
+            <span>
+              <span style={{ color: '#235A7B' }}>Vendor</span>
+              <span style={{ color: '#79AE61' }}>Bridge</span>
+            </span>
           </div>
         </div>
 

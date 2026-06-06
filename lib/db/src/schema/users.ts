@@ -10,6 +10,8 @@ export const usersTable = pgTable("users", {
   role: text("role").notNull().default("procurement_officer"),
   isActive: boolean("is_active").notNull().default(true),
   vendorId: integer("vendor_id"),
+  phone: text("phone"),
+  avatarUrl: text("avatar_url"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow().$onUpdate(() => new Date()),
 });

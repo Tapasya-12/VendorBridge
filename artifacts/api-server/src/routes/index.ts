@@ -12,6 +12,7 @@ import activityLogsRouter from "./activity-logs";
 import notificationsRouter from "./notifications";
 import dashboardRouter from "./dashboard";
 import analyticsRouter from "./analytics";
+import uploadRouter from "./upload";
 import { requireAuth } from "../middleware/auth";
 
 const router: IRouter = Router();
@@ -29,6 +30,7 @@ router.use(invoicesRouter);
 router.use(activityLogsRouter);
 router.use(notificationsRouter);
 router.use(dashboardRouter);
+router.use(uploadRouter);
 router.use(analyticsRouter);
 
 export default router;
