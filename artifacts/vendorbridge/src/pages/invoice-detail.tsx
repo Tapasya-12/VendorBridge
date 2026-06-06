@@ -1,6 +1,8 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
+import html2pdf from "html2pdf.js";
 import { useParams, Link } from "wouter";
 import { useGetInvoice, useSendInvoiceEmail, getGetInvoiceQueryKey } from "@workspace/api-client-react";
+import { useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -34,12 +36,22 @@ export default function InvoiceDetail() {
   const invId = parseInt(id ?? "0", 10);
   const [emailInput, setEmailInput] = useState("");
   const [emailDialogOpen, setEmailDialogOpen] = useState(false);
+  const invoiceRef = useRef<HTMLDivElement>(null);
+  const queryClient = useQueryClient();
 
   const { data: inv, isLoading, isError } = useGetInvoice(invId, { query: { enabled: !!invId, queryKey: getGetInvoiceQueryKey(invId) } });
   const sendEmail = useSendInvoiceEmail();
 
   const handleDownloadPdf = () => {
-    window.print();
+    if (!invoiceRef.current) return;
+    const opt = {
+      margin:       10,
+      filename:     `Invoice-${inv?.invoiceNumber || invId}.pdf`,
+      image:        { type: 'jpeg', quality: 0.98 },
+      html2canvas:  { scale: 2, useCORS: true },
+      jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+    };
+    html2pdf().set(opt).from(invoiceRef.current).save();
   };
 
   const handleSendEmail = async () => {
@@ -106,7 +118,7 @@ export default function InvoiceDetail() {
       </div>
 
       {/* Printable invoice document */}
-      <Card className="border-border/50 print:shadow-none print:border-0">
+      <Card className="border-border/50 print:shadow-none print:border-0" ref={invoiceRef}>
         <CardContent className="pt-8 pb-8 px-10">
           <div className="flex items-start justify-between mb-8 print:mb-6">
             <div>

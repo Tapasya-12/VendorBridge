@@ -195,9 +195,9 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
   return (
     <SidebarProvider>
-      <div className="flex min-h-screen w-full bg-slate-50 dark:bg-slate-950">
+      <div className="flex min-h-screen w-full bg-slate-50 dark:bg-slate-950 print:bg-white print:min-h-0 print:h-auto">
         <AppSidebar />
-        <div className="flex-1 flex flex-col min-w-0">
+        <div className="flex-1 flex flex-col min-w-0 print:block">
           <header className="h-14 flex items-center px-4 border-b bg-white dark:bg-slate-900 shrink-0 print:hidden gap-3">
             <SidebarTrigger />
             {breadcrumbs}
@@ -218,8 +218,8 @@ export function Layout({ children }: { children: React.ReactNode }) {
               )}
             </div>
           </header>
-          <main className="flex-1 p-6 overflow-auto">
-            <div className="mx-auto max-w-6xl">
+          <main className="flex-1 p-6 overflow-auto print:p-0 print:overflow-visible print:block">
+            <div className="mx-auto max-w-6xl print:max-w-none print:w-full">
               {children}
             </div>
           </main>
